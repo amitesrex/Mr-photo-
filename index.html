@@ -1,0 +1,1640 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0f1f19">
+<meta name="application-name" content="MR Photo">
+<meta name="apple-mobile-web-app-title" content="MR Photo">
+<meta name="description" content="पासपोर्ट फोटो स्टूडियो — क्रॉप, बैकग्राउंड, शीट लेआउट, प्रिंट और PDF">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>MR Photo • पासपोर्ट स्टूडियो</title>
+<style>
+:root{
+  --ink:#0f1f19;--ink2:#1c3429;--mat:#1f5a45;--mat-d:#154034;
+  --paper:#f4f7f5;--card:#fff;--line:#d6e1db;--soft:#e6eee9;--muted:#58706a;
+  --amber:#ffb300;--amber-d:#e29a00;--danger:#b83a3a;--ok:#1f7a55;
+  --top:54px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{overflow:hidden;background:var(--ink);color:var(--ink);line-height:1.45;
+  font-family:"Noto Sans Devanagari","Mukta","Hind","Segoe UI",system-ui,-apple-system,Roboto,sans-serif;font-variant-numeric:tabular-nums}
+body.noscroll{overflow:hidden}
+button,input,select{font-family:inherit;color:inherit}
+button{cursor:pointer}
+.hidden{display:none!important}
+.ic{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.ic.sm{width:18px;height:18px}
+:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+
+/* ---------- shell ---------- */
+.shell{height:100dvh;display:grid;grid-template-rows:var(--top) minmax(0,1fr) auto;grid-template-areas:"top" "stage" "panel"}
+@media(min-width:900px){
+  .shell{grid-template-columns:410px minmax(0,1fr);grid-template-rows:var(--top) minmax(0,1fr);grid-template-areas:"top top" "panel stage"}
+}
+
+/* ---------- top bar ---------- */
+.top{grid-area:top;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 12px 0 14px;gap:10px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.05rem;letter-spacing:-.01em}
+.brand small{display:block;font-size:.62rem;font-weight:500;color:#9db4a9;letter-spacing:0;margin-top:-3px}
+.mark{width:30px;height:30px;display:grid;grid-template-columns:1fr 1fr;gap:2px;padding:3px;background:#fff;border-radius:7px}
+.mark i{background:var(--mat);border-radius:2px}
+.mark i:nth-child(2),.mark i:nth-child(3){background:var(--amber)}
+.top-actions{display:flex;gap:8px;align-items:center}
+.icon-btn{width:38px;height:38px;border-radius:11px;border:0;background:rgba(255,255,255,.1);color:#fff;display:grid;place-items:center}
+.icon-btn:active{transform:scale(.94)}
+.icon-btn.on{background:var(--amber);color:var(--ink)}
+
+/* ---------- stage (cutting mat) ---------- */
+.stage{grid-area:stage;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:58px 12px 62px 12px;
+  background-color:var(--mat);
+  background-image:
+    radial-gradient(ellipse at 50% 40%,rgba(255,255,255,.07),transparent 70%),
+    linear-gradient(rgba(255,255,255,.14) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.14) 1px,transparent 1px),
+    linear-gradient(rgba(255,255,255,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.055) 1px,transparent 1px);
+  background-size:100% 100%,64px 64px,64px 64px,16px 16px,16px 16px}
+.sheetbox{display:grid;grid-template-columns:16px auto;grid-template-rows:16px auto}
+.sheetbox canvas{display:block}
+#pvCv{background:#fff;box-shadow:0 14px 34px rgba(0,0,0,.5)}
+.chips{position:absolute;top:10px;left:0;right:0;display:flex;gap:8px;overflow-x:auto;padding:0 12px 4px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.pc{flex:none;background:rgba(10,28,21,.62);color:#eaf4ef;border:1px solid rgba(255,255,255,.22);border-radius:30px;padding:6px 13px;font-size:.78rem;font-weight:700;backdrop-filter:blur(4px);white-space:nowrap}
+.pc small{font-weight:500;opacity:.75;margin-left:6px}
+.pc:active{background:var(--amber);color:var(--ink)}
+.stage-foot{position:absolute;left:0;right:0;bottom:10px;display:flex;flex-direction:column;align-items:center;gap:6px;pointer-events:none;padding:0 10px}
+.stage-foot>*{pointer-events:auto}
+.pill{background:rgba(10,24,18,.82);color:#e8f3ed;padding:6px 8px 6px 14px;border-radius:24px;font-size:.74rem;display:flex;gap:10px;align-items:center;max-width:100%;backdrop-filter:blur(4px)}
+.pill .pager{display:flex;align-items:center;gap:4px;font-weight:700}
+.pill .pager button{width:26px;height:26px;border-radius:50%;border:0;background:rgba(255,255,255,.16);color:#fff;font-size:1rem;line-height:1}
+.pill:not(:has(.pager:not(.hidden))){padding-right:14px}
+.warn{background:var(--amber);color:var(--ink);font-size:.72rem;font-weight:600;padding:5px 11px;border-radius:9px;max-width:96%;text-align:center}
+.empty-cta{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(290px,84%);background:#fff;border-radius:20px 20px 20px 6px;padding:20px 18px;text-align:center;box-shadow:0 18px 40px rgba(0,0,0,.4)}
+.empty-cta .big{width:54px;height:54px;border-radius:16px;background:var(--soft);display:grid;place-items:center;margin:0 auto 10px;color:var(--mat)}
+.empty-cta .big .ic{width:28px;height:28px}
+.empty-cta h2{font-size:1.05rem;font-weight:800}
+.empty-cta p{font-size:.78rem;color:var(--muted);margin:3px 0 14px}
+
+/* ---------- sidebar hide / show ---------- */
+.shell.nopanel{grid-template-columns:minmax(0,1fr);grid-template-rows:var(--top) minmax(0,1fr);grid-template-areas:"top" "stage"}
+.shell.nopanel .panel{display:none}
+/* ---------- panel / drawer ---------- */
+.panel{grid-area:panel;background:var(--paper);display:flex;flex-direction:column;min-height:0;border-radius:22px 22px 0 0;box-shadow:0 -14px 34px rgba(0,0,0,.3);position:relative;z-index:5;overflow:hidden}
+.grip{border:0;background:none;height:20px;display:grid;place-items:center;flex:none}
+.grip::before{content:"";width:38px;height:4px;border-radius:4px;background:#c3d1c9}
+.panel-body{overflow-y:auto;padding:2px 18px 24px;height:min(36dvh,310px);transition:height .22s ease;overscroll-behavior:contain}
+.panel.collapsed .panel-body{height:0;padding-top:0;padding-bottom:0;overflow:hidden}
+.tabbar{order:2;display:flex;background:var(--ink);padding-bottom:env(safe-area-inset-bottom);flex:none}
+.tabbar button{flex:1;border:0;background:none;color:#8da49a;padding:8px 2px 7px;font-size:.64rem;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:2px;position:relative}
+.tabbar button.hasdot::before{content:"";position:absolute;top:7px;right:calc(50% - 20px);width:7px;height:7px;border-radius:50%;background:var(--amber)}
+.tabbar button.on{color:#fff}
+.tabbar button.on .ic{color:var(--amber)}
+.tabbar button.on::after{content:"";position:absolute;top:0;left:30%;right:30%;height:3px;border-radius:0 0 3px 3px;background:var(--amber)}
+@media(min-width:900px){
+  .panel{border-radius:0;box-shadow:none;border-right:1px solid var(--line)}
+  .grip{display:none}
+  .panel-body{height:auto;flex:1;padding:6px 22px 30px}
+  .panel.collapsed .panel-body{height:auto;padding:6px 22px 30px;overflow-y:auto}
+  .tabbar{order:-1}
+  .tabbar button{padding:11px 2px 9px}
+  .tabbar button.on::after{top:auto;bottom:0;border-radius:3px 3px 0 0}
+}
+.tabc{display:none}.tabc.on{display:block}
+h3{font-size:.84rem;font-weight:800;margin:16px 0 9px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+h3:first-child{margin-top:8px}
+h3 small{font-weight:500;color:var(--muted);font-size:.72rem}
+.hint{font-size:.74rem;color:var(--muted);margin-top:6px;line-height:1.5}
+.field{margin-bottom:13px}
+.lbl{display:flex;justify-content:space-between;font-size:.78rem;font-weight:600;color:var(--muted);margin-bottom:6px}
+.lbl b{color:var(--ink)}
+.rule{height:1px;background:var(--line);margin:14px 0}
+
+/* buttons */
+.btn{border:0;border-radius:12px;padding:11px 14px;font-weight:700;font-size:.84rem;display:inline-flex;gap:7px;align-items:center;justify-content:center;background:var(--soft);color:var(--ink);transition:transform .1s}
+.btn:active{transform:scale(.97)}
+.btn.amber{background:var(--amber)}
+.btn.ink{background:var(--ink);color:#fff}
+.btn.line{background:transparent;box-shadow:inset 0 0 0 1.5px var(--line)}
+.btn.danger{background:#fbeaea;color:var(--danger)}
+.btn.sm{padding:7px 11px;font-size:.76rem;border-radius:9px}
+.btn.block{width:100%}
+.rows2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+
+/* segmented chips */
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:0;background:var(--soft);color:var(--ink);border-radius:10px;padding:8px 12px;font-size:.8rem;font-weight:700}
+.chip.on{background:var(--ink);color:#fff}
+.seg.fit .chip{flex:1}
+
+/* inputs */
+input[type=text],input[type=number]{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radius:11px;font-size:.88rem;background:#fff;margin-bottom:8px}
+input[type=text]:focus,input[type=number]:focus{outline:none;border-color:var(--mat);box-shadow:0 0 0 3px rgba(31,90,69,.15)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:5px;background:#cfdcd5;border-radius:6px;outline:none;margin:8px 0}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;border-radius:50%;background:var(--amber);border:3px solid var(--ink);cursor:pointer}
+input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--amber);border:3px solid var(--ink);cursor:pointer}
+input[type=color]{width:40px;height:40px;border:0;border-radius:50%;padding:0;background:none;cursor:pointer}
+
+/* stepper */
+.stepper{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+.stepper button{width:48px;height:48px;border-radius:14px;border:0;background:var(--ink);color:#fff;display:grid;place-items:center}
+.stepper button:active{background:var(--mat)}
+#cnt{flex:1;text-align:center;font-size:1.9rem;font-weight:800;margin:0;padding:4px;border-radius:14px;letter-spacing:-.02em}
+
+/* switch rows */
+.sw-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid var(--line)}
+.sw-row:last-child{border-bottom:0}
+.sw-row b{font-size:.85rem;font-weight:700;display:block}
+.sw-row small{display:block;font-size:.7rem;color:var(--muted);font-weight:500;line-height:1.35}
+.toggle-switch{position:relative;flex:0 0 46px;width:46px;height:26px;background:#bccbc3;border-radius:20px;cursor:pointer;transition:background .15s}
+.toggle-switch.on{background:var(--mat)}
+.toggle-switch::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;background:#fff;border-radius:50%;transition:left .15s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.toggle-switch.on::after{left:23px}
+
+/* photo strip */
+.strip{display:flex;gap:9px;overflow-x:auto;padding:2px 2px 8px}
+.th{position:relative;flex:0 0 64px;height:82px;border-radius:10px 10px 10px 3px;overflow:hidden;box-shadow:0 0 0 2px transparent;background:var(--soft);cursor:pointer}
+.th.on{box-shadow:0 0 0 3px var(--amber)}
+.th img{width:100%;height:100%;object-fit:cover;display:block}
+.th .x{position:absolute;top:3px;right:3px;width:21px;height:21px;border-radius:50%;border:0;background:rgba(15,31,25,.82);color:#fff;font-size:14px;line-height:1}
+.th .rg{position:absolute;left:0;right:0;bottom:0;background:rgba(15,31,25,.86);color:#fff;font-size:.66rem;font-weight:800;text-align:center;padding:2px 0;letter-spacing:.01em}
+.th.add{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:transparent;box-shadow:inset 0 0 0 2px #b4c6bc;color:var(--muted);font-size:.68rem;font-weight:700}
+
+/* size cards */
+.sizes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.size-card{background:#fff;border-radius:13px;box-shadow:inset 0 0 0 1.5px var(--line);padding:9px 4px 8px;text-align:center;font-size:.74rem;font-weight:800;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;line-height:1.25}
+.size-card .glyph{height:34px;display:flex;align-items:center;justify-content:center}
+.size-card .glyph i{height:100%;display:block;background:#cfe1d7;border:1.5px solid var(--ink);border-radius:3px;position:relative;overflow:hidden}
+.size-card .glyph i::after{content:"";position:absolute;left:50%;top:20%;width:36%;aspect-ratio:1;transform:translateX(-50%);border-radius:50%;background:var(--ink);opacity:.75;box-shadow:0 120% 0 38% rgba(15,31,25,.75)}
+.size-card .dim{font-weight:500;color:var(--muted);font-size:.66rem}
+.size-card.active{background:var(--ink);color:#fff;box-shadow:none}
+.size-card.active .dim{color:#a8c0b4}
+.size-card.active .glyph i{background:var(--amber);border-color:#fff}
+.extra{background:#fff;border-radius:14px;box-shadow:inset 0 0 0 1.5px var(--line);padding:2px 14px;margin-bottom:10px}
+.extra .sw-row{border-bottom:0}
+.xbody{padding:0 0 12px}
+.xbody .field:last-child{margin-bottom:6px}
+.size-card{position:relative}
+.size-card .pen{position:absolute;top:4px;right:4px;width:20px;height:20px;border-radius:50%;background:var(--amber);color:var(--ink);display:grid;place-items:center}
+.size-card .pen .ic{width:12px;height:12px}
+.sizes.editing .size-card{box-shadow:inset 0 0 0 1.5px var(--amber)}
+.sizes.editing .size-card.active{box-shadow:none}
+h3 .btn{font-size:.72rem;padding:5px 11px}
+.colorrow{display:flex;align-items:center;gap:10px;font-size:.78rem;font-weight:600;color:var(--muted)}
+.custom-box{background:#fff;border-radius:14px;box-shadow:inset 0 0 0 1.5px var(--line);padding:13px;margin-top:10px}
+.custom-row{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end}
+.custom-row label{font-size:.72rem;color:var(--muted);display:block;margin-bottom:3px;font-weight:600}
+.custom-row input{margin:0}
+.cap{margin-top:10px;padding:10px 12px;background:var(--soft);border-radius:11px;font-size:.8rem;line-height:1.6}
+.saved{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
+.saved-chip{background:var(--soft);font-size:.74rem;padding:5px 11px;border-radius:20px;cursor:pointer;font-weight:700}
+.saved-chip:active{background:var(--amber)}
+
+/* swatches */
+.swatches{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.swatch{width:38px;height:38px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.18);cursor:pointer;position:relative}
+.swatch.active{box-shadow:0 0 0 3px var(--paper),0 0 0 6px var(--ink)}
+
+/* preset list */
+.preset-item{background:#fff;border-radius:13px;box-shadow:inset 0 0 0 1.5px var(--line);padding:11px 12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.preset-item small{color:var(--muted);font-size:.72rem}
+.preset-item strong{font-size:.86rem}
+
+/* ---------- modals ---------- */
+.modal{position:fixed;inset:0;z-index:200;display:flex}
+.backdrop{position:absolute;inset:0;background:rgba(6,16,12,.6);backdrop-filter:blur(3px)}
+.out{align-items:flex-end;justify-content:center}
+.dialog{position:relative;background:var(--paper);width:100%;max-width:520px;border-radius:24px 24px 0 0;padding:8px 18px calc(22px + env(safe-area-inset-bottom));animation:up .22s ease}
+@keyframes up{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+@media(min-width:900px){.out{align-items:center}.dialog{border-radius:22px;padding-top:18px}}
+.dialog-head{display:flex;justify-content:space-between;align-items:center;margin:6px 0 4px}
+.dialog-head h2{font-size:1.1rem;font-weight:800}
+.otiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+.otile{border:0;background:var(--soft);border-radius:18px 18px 18px 5px;padding:15px 14px;text-align:left;display:flex;flex-direction:column;gap:7px;font-weight:800;font-size:.95rem}
+.otile small{font-weight:500;font-size:.72rem;color:var(--muted);line-height:1.35}
+.otile.wide{grid-column:1/-1;flex-direction:row;align-items:center;gap:12px;background:var(--ink);color:#fff}
+.otile.wide small{color:#a9c1b5}
+.otile.wide .ic{width:26px;height:26px;color:var(--amber)}
+.dialog{max-height:90dvh;overflow-y:auto}
+.otile.primary{background:var(--amber)}
+.otile.primary small{color:#5a4200}
+.otile:active{transform:scale(.97)}
+.note{display:flex;gap:9px;font-size:.74rem;color:var(--muted);background:#fff;border-radius:12px;padding:10px 12px;margin-top:12px;line-height:1.5;box-shadow:inset 0 0 0 1.5px var(--line)}
+
+.crop{flex-direction:column;background:var(--ink);color:#fff}
+.crop-top{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;height:var(--top);flex:none}
+.crop-top b{font-size:.95rem}
+.crop-main{flex:1;min-height:0;display:flex;flex-direction:column}
+.ed-wrap{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:10px;
+  background:radial-gradient(circle at 50% 40%,#1d3a2e,#0c1713 75%)}
+#edCv{touch-action:none;cursor:grab;background:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.85),0 16px 40px rgba(0,0,0,.6);max-width:100%;max-height:100%}
+#edCv:active{cursor:grabbing}
+.crop-tools{flex:none;background:var(--paper);color:var(--ink);border-radius:22px 22px 0 0;padding:14px 18px calc(18px + env(safe-area-inset-bottom));max-height:46dvh;overflow-y:auto}
+@media(min-width:900px){
+  .crop{align-items:stretch}
+  .crop-main{flex-direction:row}
+  .crop-tools{width:400px;max-height:none;border-radius:0}
+}
+.zoomrow{display:flex;align-items:center;gap:10px}
+.zoomrow button{width:38px;height:38px;border-radius:11px;border:0;background:var(--soft);display:grid;place-items:center;flex:none}
+.zoomrow input{margin:0}
+.tools{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+.tool{border:0;border-radius:13px;background:var(--soft);padding:10px 2px 8px;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:.66rem;font-weight:800;line-height:1.2;text-align:center}
+.tool.on{background:var(--ink);color:#fff}
+.tool.on .ic{color:var(--amber)}
+.tool:active{transform:scale(.95)}
+
+/* progress + toast */
+.progress-overlay{position:fixed;inset:0;z-index:9999;background:rgba(6,16,12,.62);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
+.progress-box{background:#fff;border-radius:22px 22px 22px 6px;padding:26px 22px;width:88%;max-width:320px;text-align:center;box-shadow:0 22px 44px rgba(0,0,0,.35)}
+.p-icon{font-size:32px;margin-bottom:6px}
+.p-title{font-weight:800;font-size:1rem;margin-bottom:3px}
+.p-sub{font-size:.78rem;color:var(--muted);margin-bottom:14px}
+.p-pct{font-size:1.5rem;font-weight:800;letter-spacing:-.02em;margin:-4px 0 8px}
+#pPrev{display:block;margin:0 auto 12px;background:#fff;border-radius:3px;box-shadow:0 5px 16px rgba(0,0,0,.3),0 0 0 1px var(--line)}
+details.note{display:block;cursor:pointer}
+details.note summary{font-weight:700;color:var(--ink);list-style:none;display:flex;gap:8px;align-items:center}
+details.note summary::-webkit-details-marker{display:none}
+details.note p{margin-top:8px}
+.pbg{height:8px;background:var(--soft);border-radius:8px;overflow:hidden}
+.pbf{height:100%;width:0;background:var(--amber);transition:width .08s}
+.toast{position:fixed;left:50%;top:calc(var(--top) + 10px);transform:translateX(-50%) translateY(-6px);background:#fff;color:var(--ink);padding:10px 16px;border-radius:14px;font-size:.82rem;font-weight:700;z-index:10000;max-width:92%;text-align:center;box-shadow:0 10px 26px rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;border-left:5px solid var(--amber)}
+.toast.show{opacity:1;transform:translateX(-50%)}
+
+/* print */
+#printSheet{display:none}
+@media print{
+  html,body{margin:0!important;padding:0!important;background:#fff!important;overflow:visible!important;height:auto!important}
+  body>*:not(#printSheet){display:none!important}
+  #printSheet{display:block!important}
+  #printSheet .pg{overflow:hidden;page-break-after:always;break-after:page}
+  #printSheet .pg:last-child{page-break-after:auto;break-after:auto}
+  #printSheet img{display:block;width:100%;height:100%;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<!-- ============ icon sprite ============ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="i-photos" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="1.7"/><path d="M4 18l5-5 4 4 3-3 4 4"/></symbol>
+<symbol id="i-size" viewBox="0 0 24 24"><path d="M3 17L17 3l4 4L7 21z"/><path d="M7 13l2 2M10 10l2 2M13 7l2 2"/></symbol>
+<symbol id="i-sheet" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M4 9h16M4 15h16M12 3v18"/></symbol>
+<symbol id="i-color" viewBox="0 0 24 24"><path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/></symbol>
+<symbol id="i-presets" viewBox="0 0 24 24"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></symbol>
+<symbol id="i-print" viewBox="0 0 24 24"><path d="M7 8V3h10v5M7 17H5a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M7 14h10v7H7z"/></symbol>
+<symbol id="i-pdf" viewBox="0 0 24 24"><path d="M6 3h8l5 5v13H6z"/><path d="M14 3v5h5M9 14h6M9 17h4"/></symbol>
+<symbol id="i-share" viewBox="0 0 24 24"><path d="M12 15V3M7 8l5-5 5 5M5 14v6h14v-6"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+<symbol id="i-camera" viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v12H4z"/><circle cx="12" cy="13" r="3.5"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14"/></symbol>
+<symbol id="i-crop" viewBox="0 0 24 24"><path d="M7 3v14h14M3 7h14v14"/></symbol>
+<symbol id="i-rotl" viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 3-6.2M4 4v5h5"/></symbol>
+<symbol id="i-rotr" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-3-6.2M20 4v5h-5"/></symbol>
+<symbol id="i-flip" viewBox="0 0 24 24"><path d="M12 3v18M8 7l-5 5 5 5zM16 7l5 5-5 5z"/></symbol>
+<symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5"/></symbol>
+<symbol id="i-wand" viewBox="0 0 24 24"><path d="M4 20L16 8M14 6l4 4M19 3v3M17.5 4.5h3M6 5v2M5 6h2"/></symbol>
+<symbol id="i-face" viewBox="0 0 24 24"><path d="M12 3c3.3 0 6 3.6 6 8s-2.7 8-6 8-6-3.6-6-8 2.7-8 6-8z"/><path d="M9.5 10h.01M14.5 10h.01M10 14.5c1.2 1 2.8 1 4 0"/></symbol>
+<symbol id="i-copyall" viewBox="0 0 24 24"><path d="M8 8h12v12H8z"/><path d="M4 16V4h12"/></symbol>
+<symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+<symbol id="i-install" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></symbol>
+<symbol id="i-layers" viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/></symbol>
+<symbol id="i-save" viewBox="0 0 24 24"><path d="M5 3h12l2 2v16H5z"/><path d="M8 3v6h8V3M8 21v-7h8v7"/></symbol>
+<symbol id="i-sidebar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M9.5 4v16"/></symbol>
+<symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 7h4M12 7h8M4 12h9M17 12h3M4 17h2M10 17h10"/><circle cx="10" cy="7" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="8" cy="17" r="2"/></symbol>
+<symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13 7l4 4"/></symbol>
+<symbol id="i-fill" viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M4 9h16M9 4v16" /></symbol>
+</defs></svg>
+
+<div class="shell" id="shell">
+
+  <!-- ============ TOP ============ -->
+  <header class="top">
+    <div class="brand">
+      <div class="mark"><i></i><i></i><i></i><i></i></div>
+      <div>MR Photo<small>पासपोर्ट स्टूडियो</small></div>
+    </div>
+    <div class="top-actions">
+      <button class="icon-btn on" id="panelBtn" onclick="togglePanel()" aria-label="टूल पैनल दिखाएं / छिपाएं" title="टूल पैनल दिखाएं / छिपाएं"><svg class="ic"><use href="#i-sidebar"/></svg></button>
+      <button class="btn amber" onclick="openOutput()"><svg class="ic sm"><use href="#i-print"/></svg>आउटपुट</button>
+    </div>
+  </header>
+
+  <!-- ============ STAGE ============ -->
+  <section class="stage" id="stage">
+    <div class="chips" id="presetScroll"></div>
+
+    <div class="sheetbox" id="sheetBox">
+      <i></i><canvas id="rulerT"></canvas>
+      <canvas id="rulerL"></canvas><canvas id="pvCv" width="10" height="10"></canvas>
+    </div>
+
+    <div class="empty-cta" id="emptyCta">
+      <div class="big"><svg class="ic"><use href="#i-photos"/></svg></div>
+      <h2>पहली फोटो जोड़ें</h2>
+      <p>गैलरी से एक साथ कई फोटो चुन सकते हैं</p>
+      <div class="rows2">
+        <button class="btn ink" onclick="$('fi').click()"><svg class="ic sm"><use href="#i-plus"/></svg>गैलरी</button>
+        <button class="btn" onclick="$('cam').click()"><svg class="ic sm"><use href="#i-camera"/></svg>कैमरा</button>
+      </div>
+    </div>
+
+    <div class="stage-foot">
+      <div class="warn hidden" id="warnBox"></div>
+      <div class="pill">
+        <span class="pager hidden" id="pager"><button onclick="pg(-1)" aria-label="पिछला पेज">‹</button><span id="pgLabel">1/1</span><button onclick="pg(1)" aria-label="अगला पेज">›</button></span>
+        <span id="layoutInfo"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PANEL ============ -->
+  <aside class="panel" id="panel" data-tab="">
+    <button class="grip" onclick="$('panel').classList.toggle('collapsed');setTimeout(refresh,250)" aria-label="पैनल छोटा / बड़ा करें"></button>
+
+    <div class="panel-body" id="panelBody">
+
+      <!-- ---- फोटो ---- -->
+      <div class="tabc on" id="tab-photos">
+        <h3>आपकी फोटो <small id="photoLabel">अभी कोई फोटो नहीं</small></h3>
+        <div class="strip" id="strip"></div>
+        <div class="rows2" style="margin-top:6px">
+          <button class="btn ink" onclick="$('fi').click()"><svg class="ic sm"><use href="#i-plus"/></svg>गैलरी</button>
+          <button class="btn" onclick="$('cam').click()"><svg class="ic sm"><use href="#i-camera"/></svg>कैमरा</button>
+        </div>
+        <div class="rows2" style="margin-top:8px">
+          <button class="btn amber" onclick="openCrop()"><svg class="ic sm"><use href="#i-crop"/></svg>क्रॉप स्टूडियो</button>
+          <button class="btn danger" onclick="clearPhotos()"><svg class="ic sm"><use href="#i-trash"/></svg>सब हटाएं</button>
+        </div>
+        <input type="file" id="fi" accept="image/*" multiple class="hidden" onchange="addPhotos(event)">
+        <input type="file" id="cam" accept="image/*" capture="user" class="hidden" onchange="addPhotos(event)">
+
+        <h3>इस फोटो की कॉपी <small id="pWho"></small></h3>
+        <div class="stepper">
+          <button onclick="chgCopies(-1)" aria-label="कॉपी घटाएं"><svg class="ic"><use href="#i-minus"/></svg></button>
+          <input type="number" id="pcnt" min="1" max="100" value="8" oninput="setPCnt()">
+          <button onclick="chgCopies(1)" aria-label="कॉपी बढ़ाएं"><svg class="ic"><use href="#i-plus"/></svg></button>
+        </div>
+        <div class="cap" id="totalInfo" style="margin-top:2px"></div>
+        <p class="hint"><b>क्रम:</b> हर फोटो की कॉपी एक ब्लॉक में लगती है — पहली फोटो 1–6, दूसरी 7–12, तीसरी 13–18… (थंबनेल पर नंबर दिखते हैं)। नई फोटो हमेशा पिछली के बाद जुड़ती है, पुरानी फोटो / उसकी सेटिंग को नहीं छेड़ती।<br>फोटो पर टैप करें → क्रॉप स्टूडियो खुलेगा।</p>
+      </div>
+
+      <!-- ---- साइज ---- -->
+      <div class="tabc" id="tab-size">
+        <h3>फोटो साइज <button class="btn" id="sizeEditBtn" onclick="toggleSizeEdit()">✎ एडिट</button></h3>
+        <div class="sizes" id="sizeGrid"></div>
+        <div class="rows2 hidden" id="sizeEditTools" style="margin-top:10px">
+          <button class="btn sm" onclick="startNewSize()">+ नया साइज जोड़ें</button>
+          <button class="btn line sm" onclick="resetSizes()">⟲ डिफ़ॉल्ट साइज</button>
+        </div>
+        <div class="custom-box hidden" id="sizeEditBox">
+          <div class="lbl" id="seTitle">साइज एडिट करें</div>
+          <input type="text" id="seName" maxlength="24" placeholder="नाम (जैसे: मेरा पासपोर्ट)">
+          <div class="custom-row" style="grid-template-columns:1fr 1fr">
+            <div><label>चौड़ाई mm</label><input type="number" id="seW" min="10" max="280" step="0.5"></div>
+            <div><label>ऊँचाई mm</label><input type="number" id="seH" min="10" max="280" step="0.5"></div>
+          </div>
+          <div class="rows2" style="margin-top:10px"><button class="btn amber" onclick="saveSizeEdit()">सेव</button><button class="btn danger" id="seDel" onclick="deleteSize()">हटाएं</button></div>
+          <button class="btn line sm block" style="margin-top:8px" onclick="cancelSizeEdit()">रद्द</button>
+        </div>
+        <div class="custom-box hidden" id="customBox">
+          <div class="custom-row">
+            <div><label>चौड़ाई mm</label><input type="number" id="cW" value="35" min="10" max="200" step="0.5" oninput="showCap()"></div>
+            <div><label>ऊँचाई mm</label><input type="number" id="cH" value="45" min="10" max="280" step="0.5" oninput="showCap()"></div>
+            <button class="btn amber sm" onclick="applyCustom()">लागू</button>
+          </div>
+          <div class="cap" id="capBox"></div>
+          <div class="lbl" style="margin:12px 0 0">टेम्पलेट से चुनें (साइज + कॉपी + लेआउट)</div>
+          <div class="saved" id="customPresets"></div>
+          <div class="lbl" style="margin:12px 0 0">पिछले कस्टम साइज</div>
+          <div class="saved" id="savedCustom"></div>
+          <button class="btn line sm" style="margin-top:10px" onclick="clearCustoms()">सेव्ड साइज हटाएं</button>
+        </div>
+        <div class="cap" id="sizeCap" style="margin-top:12px"></div>
+      </div>
+
+      <!-- ---- शीट ---- -->
+      <div class="tabc" id="tab-sheet">
+        <h3>पेपर</h3>
+        <div class="seg" data-k="paper">
+          <button class="chip" data-v="A4">A4</button><button class="chip" data-v="A5">A5</button><button class="chip" data-v="A6">A6</button>
+          <button class="chip" data-v="4x6">4×6″</button><button class="chip" data-v="5x7">5×7″</button><button class="chip" data-v="Letter">Letter</button>
+        </div>
+        <h3>पेपर दिशा</h3>
+        <div class="seg fit" data-k="orient">
+          <button class="chip" data-v="port">पोर्ट्रेट (खड़ा)</button><button class="chip" data-v="land">लैंडस्केप (लेटा)</button>
+        </div>
+
+        <h3>सब फोटो की कॉपी एक साथ <small>हर फोटो पर लागू</small></h3>
+        <div class="stepper">
+          <button onclick="chg(-1)" aria-label="घटाएं"><svg class="ic"><use href="#i-minus"/></svg></button>
+          <input type="number" id="cnt" min="1" max="200" value="8" oninput="setCnt()">
+          <button onclick="chg(1)" aria-label="बढ़ाएं"><svg class="ic"><use href="#i-plus"/></svg></button>
+        </div>
+        <button class="btn line block sm" onclick="autoFill()"><svg class="ic sm"><use href="#i-fill"/></svg>एक पेज पूरा भरें (Auto)</button>
+
+        <div class="rule"></div>
+        <div class="field" id="fMargin"><div class="lbl">किनारे का मार्जिन (चारों तरफ) <b id="v_margin">6 mm</b></div><input type="range" id="marginR" data-k="margin" min="0" max="20" step="0.5" value="6" oninput="setNum('margin',+this.value)"></div>
+        <div class="field" id="fGap"><div class="lbl">फोटो के बीच गैप <b id="v_gap">2.5 mm</b></div><input type="range" id="gapR" data-k="gap" min="0" max="12" step="0.5" value="2.5" oninput="setNum('gap',+this.value)"></div>
+        <p class="hint hidden" id="splitHint">अलग-अलग मार्जिन / गैप चालू है — उसके स्लाइडर "एक्स्ट्रा" टैब में हैं।</p>
+
+        <div class="sw-row"><div><b>फोटो पर बॉर्डर</b></div><div class="toggle-switch on" id="tBorder" tabindex="0" role="switch" onclick="tog('border')"></div></div>
+        <div class="sw-row"><div><b>सारी फोटो एक ही लाइन में</b><small>दाएं-बाएं सिर्फ 2 mm जगह, गैप भी 2 mm तक</small></div><div class="toggle-switch" id="tOne" tabindex="0" role="switch" onclick="tog('oneLine')"></div></div>
+        <div class="sw-row"><div><b>साइज में Fill (Crop)</b><small>ऑफ = पूरी फोटो दिखेगी, खाली जगह में बैकग्राउंड रंग</small></div><div class="toggle-switch on" id="tFill" tabindex="0" role="switch" onclick="tog('fill')"></div></div>
+        <p class="hint">कटिंग मार्क, चारों तरफ अलग मार्जिन, बॉर्डर स्टाइल, नाम / तारीख, क्रम नंबर जैसी चीज़ें <b>"एक्स्ट्रा"</b> टैब में हैं — ज़रूरत हो तभी चालू करें।</p>
+      </div>
+
+      <!-- ---- रंग ---- -->
+      <div class="tabc" id="tab-color">
+        <h3>बैकग्राउंड रंग</h3>
+        <div class="swatches" id="swatches">
+          <div class="swatch" tabindex="0" style="background:#ffffff" data-c="#ffffff" onclick="setBg(this.dataset.c)"></div>
+          <div class="swatch" tabindex="0" style="background:#e8f4fc" data-c="#e8f4fc" onclick="setBg(this.dataset.c)"></div>
+          <div class="swatch" tabindex="0" style="background:#dbeafe" data-c="#dbeafe" onclick="setBg(this.dataset.c)"></div>
+          <div class="swatch" tabindex="0" style="background:#f1f5f9" data-c="#f1f5f9" onclick="setBg(this.dataset.c)"></div>
+          <div class="swatch" tabindex="0" style="background:#fef3c7" data-c="#fef3c7" onclick="setBg(this.dataset.c)"></div>
+          <div class="swatch" tabindex="0" style="background:#fecaca" data-c="#fecaca" onclick="setBg(this.dataset.c)"></div>
+          <div class="swatch" tabindex="0" style="background:#d1d5db" data-c="#d1d5db" onclick="setBg(this.dataset.c)"></div>
+          <label style="display:flex;align-items:center;gap:6px;font-size:.76rem;font-weight:700;color:var(--muted)"><input type="color" id="bgPick" value="#ffffff" oninput="setBg(this.value)">अपना रंग</label>
+        </div>
+        <p class="hint">सादा बैकग्राउंड हटाकर यही रंग लगाने के लिए क्रॉप स्टूडियो में "बैकग्राउंड बदलें" चालू करें।</p>
+
+        <h3>एडजस्टमेंट <small>सिर्फ चुनी हुई फोटो · <span id="adjWho"></span></small></h3>
+        <div class="strip" id="adjStrip"></div>
+        <div class="field"><div class="lbl">ब्राइटनेस <b id="vBr">100%</b></div><input type="range" id="sBr" min="60" max="150" value="100" oninput="adj('br',+this.value)"></div>
+        <div class="field"><div class="lbl">कॉन्ट्रास्ट <b id="vCt">100%</b></div><input type="range" id="sCt" min="60" max="150" value="100" oninput="adj('ct',+this.value)"></div>
+        <div class="field"><div class="lbl">सेचुरेशन <b id="vSat">100%</b></div><input type="range" id="sSat" min="0" max="200" value="100" oninput="adj('sat',+this.value)"></div>
+        <div class="field"><div class="lbl">शार्पनेस <b id="vSharp">0%</b></div><input type="range" id="sSharp" min="0" max="100" value="0" oninput="adj('sharp',+this.value)"></div>
+        <div class="rows2">
+          <button class="btn sm" onclick="autoEnhance()"><svg class="ic sm"><use href="#i-wand"/></svg>ऑटो सुधार</button>
+          <button class="btn line sm" onclick="resetAdj()"><svg class="ic sm"><use href="#i-reset"/></svg>रीसेट</button>
+        </div>
+        <button class="btn line sm block" style="margin-top:8px" onclick="adjToAll()"><svg class="ic sm"><use href="#i-copyall"/></svg>यही एडजस्टमेंट सब फोटो पर लगाएं</button>
+      </div>
+
+      <!-- ---- एक्स्ट्रा ---- -->
+      <div class="tabc" id="tab-extras">
+        <h3>एक्स्ट्रा विकल्प <small>जो चाहिए वही चालू करें</small></h3>
+
+        <div class="extra">
+          <div class="sw-row"><div><b>चारों तरफ अलग मार्जिन</b><small>Left • Right • Top • Bottom अलग-अलग</small></div><div class="toggle-switch" id="tMSplit" tabindex="0" role="switch" onclick="tog('marginSplit')"></div></div>
+          <div class="xbody hidden" id="xbMargin">
+            <div class="field"><div class="lbl">बायां (Left) <b id="v_mL">6 mm</b></div><input type="range" data-k="mL" min="0" max="40" step="0.5" value="6" oninput="setNum('mL',+this.value)"></div>
+            <div class="field"><div class="lbl">दायां (Right) <b id="v_mR">6 mm</b></div><input type="range" data-k="mR" min="0" max="40" step="0.5" value="6" oninput="setNum('mR',+this.value)"></div>
+            <div class="field"><div class="lbl">ऊपर (Top) <b id="v_mT">6 mm</b></div><input type="range" data-k="mT" min="0" max="40" step="0.5" value="6" oninput="setNum('mT',+this.value)"></div>
+            <div class="field"><div class="lbl">नीचे (Bottom) <b id="v_mB">6 mm</b></div><input type="range" data-k="mB" min="0" max="40" step="0.5" value="6" oninput="setNum('mB',+this.value)"></div>
+            <button class="btn line sm block" onclick="eqMargins()">चारों बराबर करें (बाएं जितना)</button>
+          </div>
+        </div>
+
+        <div class="extra">
+          <div class="sw-row"><div><b>अलग-अलग गैप</b><small>बाएं-दाएं और ऊपर-नीचे का गैप अलग</small></div><div class="toggle-switch" id="tGSplit" tabindex="0" role="switch" onclick="tog('gapSplit')"></div></div>
+          <div class="xbody hidden" id="xbGap">
+            <div class="field"><div class="lbl">आड़ा गैप (फोटो के बाएं-दाएं) <b id="v_gapX">2.5 mm</b></div><input type="range" data-k="gapX" min="0" max="30" step="0.5" value="2.5" oninput="setNum('gapX',+this.value)"></div>
+            <div class="field"><div class="lbl">खड़ा गैप (लाइनों के बीच) <b id="v_gapY">2.5 mm</b></div><input type="range" data-k="gapY" min="0" max="30" step="0.5" value="2.5" oninput="setNum('gapY',+this.value)"></div>
+          </div>
+        </div>
+
+        <div class="extra">
+          <div class="sw-row"><div><b>कटिंग मार्क</b><small>फोटो के कोनों पर • गैप 2 mm या ज्यादा रखें</small></div><div class="toggle-switch" id="tCut" tabindex="0" role="switch" onclick="tog('cut')"></div></div>
+        </div>
+
+        <div class="extra">
+          <div class="sw-row"><div><b>बॉर्डर स्टाइल</b><small>मोटाई और रंग (बॉर्डर चालू होना चाहिए)</small></div><div class="toggle-switch" id="tBCustom" tabindex="0" role="switch" onclick="tog('borderCustom')"></div></div>
+          <div class="xbody hidden" id="xbBorder">
+            <div class="field"><div class="lbl">मोटाई <b id="v_borderW">0.25 mm</b></div><input type="range" data-k="borderW" min="0.1" max="1.5" step="0.05" value="0.25" oninput="setNum('borderW',+this.value)"></div>
+            <div class="colorrow"><input type="color" id="borderPick" value="#222222" oninput="setBorderColor(this.value)">बॉर्डर का रंग</div>
+          </div>
+        </div>
+
+        <div class="extra">
+          <div class="sw-row"><div><b>हर नई फोटो नई लाइन से</b><small>हर व्यक्ति की फोटो अलग लाइन से शुरू • काटना आसान</small></div><div class="toggle-switch" id="tNewRow" tabindex="0" role="switch" onclick="tog('newRow')"></div></div>
+        </div>
+
+        <div class="extra">
+          <div class="sw-row"><div><b>प्रीव्यू में क्रम नंबर</b><small>सिर्फ स्क्रीन पर दिखते हैं, प्रिंट / PDF में नहीं</small></div><div class="toggle-switch" id="tNums" tabindex="0" role="switch" onclick="tog('nums')"></div></div>
+        </div>
+
+        <div class="extra">
+          <div class="sw-row"><div><b>नाम / तारीख की पट्टी</b><small>शीट के ऊपर छपेगी</small></div><div class="toggle-switch" id="tRibbon" tabindex="0" role="switch" onclick="tog('ribbon')"></div></div>
+          <div class="xbody hidden" id="xbRibbon">
+            <input type="text" id="rName" placeholder="नाम (RAHUL KUMAR)" oninput="setText('name',this.value)">
+            <div style="display:grid;grid-template-columns:1fr auto;gap:8px">
+              <input type="text" id="rDate" placeholder="तारीख (06-10-2026)" oninput="setText('date',this.value)">
+              <button class="btn sm" style="height:46px" onclick="todayDate()">आज</button>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn line sm block" onclick="resetExtras()"><svg class="ic sm"><use href="#i-reset"/></svg>सारे एक्स्ट्रा बंद / रीसेट करें</button>
+      </div>
+
+      <!-- ---- प्रीसेट ---- -->
+      <div class="tabc" id="tab-presets">
+        <h3>प्रीसेट / टेम्पलेट <small>एक टैप में पूरी सेटिंग</small></h3>
+        <div id="presetList"></div>
+        <button class="btn ink block" style="margin-top:6px" onclick="savePreset()"><svg class="ic sm"><use href="#i-save"/></svg>अभी की सेटिंग सेव करें</button>
+        <button class="btn danger block sm" style="margin-top:8px" onclick="clearPresets()">सभी सेव्ड प्रीसेट डिलीट</button>
+      </div>
+    </div>
+
+    <nav class="tabbar" id="tabbar">
+      <button class="on" data-t="photos" onclick="openTab('photos')"><svg class="ic"><use href="#i-photos"/></svg>फोटो</button>
+      <button data-t="size" onclick="openTab('size')"><svg class="ic"><use href="#i-size"/></svg>साइज</button>
+      <button data-t="sheet" onclick="openTab('sheet')"><svg class="ic"><use href="#i-sheet"/></svg>शीट</button>
+      <button data-t="color" onclick="openTab('color')"><svg class="ic"><use href="#i-color"/></svg>रंग</button>
+      <button data-t="extras" onclick="openTab('extras')"><svg class="ic"><use href="#i-sliders"/></svg>एक्स्ट्रा</button>
+      <button data-t="presets" onclick="openTab('presets')"><svg class="ic"><use href="#i-presets"/></svg>प्रीसेट</button>
+    </nav>
+  </aside>
+</div>
+
+<!-- ============ CROP STUDIO ============ -->
+<div class="modal crop hidden" id="crop" role="dialog" aria-label="क्रॉप स्टूडियो">
+  <div class="crop-top">
+    <button class="icon-btn" onclick="closeCrop()" aria-label="बंद करें"><svg class="ic"><use href="#i-close"/></svg></button>
+    <b>क्रॉप स्टूडियो</b>
+    <button class="btn amber sm" onclick="closeCrop()"><svg class="ic sm"><use href="#i-save"/></svg>हो गया</button>
+  </div>
+  <div class="crop-main">
+    <div class="ed-wrap" id="edWrap"><canvas id="edCv"></canvas></div>
+    <div class="crop-tools">
+      <div class="strip" id="edStrip"></div>
+      <div class="lbl" style="margin-top:4px">ज़ूम <b id="vZoom">100%</b></div>
+      <div class="zoomrow">
+        <button onclick="zoomStep(-0.1)" aria-label="ज़ूम कम"><svg class="ic sm"><use href="#i-minus"/></svg></button>
+        <input type="range" id="edZoom" min="20" max="500" value="100" oninput="edSet('zoom',this.value/100)">
+        <button onclick="zoomStep(0.1)" aria-label="ज़ूम ज्यादा"><svg class="ic sm"><use href="#i-plus"/></svg></button>
+      </div>
+      <div class="lbl" style="margin-top:6px">टेढ़ी फोटो सीधी करें <b id="vFine">0°</b></div>
+      <input type="range" id="edFine" min="-15" max="15" step="0.5" value="0" oninput="edSet('fine',+this.value)">
+      <div class="tools">
+        <button class="tool" onclick="rotate(-1)"><svg class="ic"><use href="#i-rotl"/></svg>बाएं घुमाएं</button>
+        <button class="tool" onclick="rotate(1)"><svg class="ic"><use href="#i-rotr"/></svg>दाएं घुमाएं</button>
+        <button class="tool" onclick="flipPhoto()"><svg class="ic"><use href="#i-flip"/></svg>पलटें</button>
+        <button class="tool" onclick="resetPhoto()"><svg class="ic"><use href="#i-reset"/></svg>रीसेट</button>
+        <button class="tool" onclick="autoFace()"><svg class="ic"><use href="#i-face"/></svg>ऑटो चेहरा</button>
+        <button class="tool on" id="guideBtn" onclick="tog('guide')"><svg class="ic"><use href="#i-photos"/></svg>गाइड</button>
+        <button class="tool" onclick="applyToAll()"><svg class="ic"><use href="#i-copyall"/></svg>सब पर लागू</button>
+        <button class="tool" onclick="removePhoto(active)"><svg class="ic"><use href="#i-trash"/></svg>फोटो हटाएं</button>
+      </div>
+      <div class="sw-row" style="margin-top:8px">
+        <div><b>बैकग्राउंड बदलें</b><small>सादी दीवार / परदे वाली फोटो पर सबसे अच्छा। रंग "रंग" टैब से चुनें।</small></div>
+        <div class="toggle-switch" id="tRmBg" tabindex="0" role="switch" onclick="toggleRmBg()"></div>
+      </div>
+      <div class="field hidden" id="tolBox">
+        <div class="lbl">सेंसिटिविटी <b id="vTol">40</b></div>
+        <input type="range" id="tolR" min="10" max="120" value="40" oninput="edSet('tol',+this.value)">
+        <p class="hint">बैकग्राउंड बचे तो बढ़ाएं • चेहरा / कपड़े कटें तो घटाएं</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ OUTPUT ============ -->
+<div class="modal out hidden" id="outModal" role="dialog" aria-label="आउटपुट">
+  <div class="backdrop" onclick="closeOutput()"></div>
+  <div class="dialog">
+    <div class="grip" style="height:14px;display:grid"></div>
+    <div class="dialog-head"><h2>प्रिंट / सेव / शेयर</h2><button class="icon-btn" style="background:var(--soft);color:var(--ink)" onclick="closeOutput()" aria-label="बंद करें"><svg class="ic"><use href="#i-close"/></svg></button></div>
+    <h3>प्रिंट क्वालिटी <small>सिर्फ प्रिंट के लिए</small></h3>
+    <div class="seg fit" data-k="printDpi">
+      <button class="chip" data-v="300">300 सामान्य</button><button class="chip" data-v="600">600 बेस्ट</button><button class="chip" data-v="720">720 Epson</button>
+    </div>
+    <p class="hint">प्रिंटर के नेटिव रेज़ोल्यूशन पर छपता है: <b>HP / Canon / Brother / लेज़र = 600</b>, <b>Epson = 720</b>। बेस्ट फोटो के लिए 600 चुनें।</p>
+    <h3>सेव / शेयर क्वालिटी <small>PDF, JPG, शेयर</small></h3>
+    <div class="seg fit" data-k="dpi">
+      <button class="chip" data-v="150">150</button><button class="chip" data-v="200">200</button><button class="chip" data-v="300">300 हाई</button><button class="chip" data-v="400">400</button><button class="chip" data-v="600">600</button>
+    </div>
+    <h3>PDF का प्रकार</h3>
+    <div class="seg fit" data-k="pdfMode">
+      <button class="chip" data-v="lossless">लॉसलेस (बेस्ट क्वालिटी)</button><button class="chip" data-v="jpeg">JPEG (छोटी फाइल)</button>
+    </div>
+    <div class="otiles" style="margin-top:14px">
+      <button class="otile primary" onclick="doPrint()"><svg class="ic"><use href="#i-print"/></svg>प्रिंट करें<small>पूरे रेज़ोल्यूशन में, सिस्टम प्रिंट डायलॉग से</small></button>
+      <button class="otile" onclick="doPDF()"><svg class="ic"><use href="#i-pdf"/></svg>PDF सेव<small>चुने पेपर साइज में, दुकान पर भी चलेगी</small></button>
+      <button class="otile" onclick="doJPG()"><svg class="ic"><use href="#i-photos"/></svg>JPG सेव<small>फुल क्वालिटी (4:4:4) + सही DPI</small></button>
+      <button class="otile" onclick="doShare()"><svg class="ic"><use href="#i-share"/></svg>शेयर<small>WhatsApp / ईमेल पर भेजें</small></button>
+      <button class="otile wide" onclick="doPrintPDF()"><svg class="ic"><use href="#i-pdf"/></svg><div>PDF खोलकर प्रिंट करें<br><small>प्रिंटर की अपनी Best / Photo क्वालिटी सेटिंग के साथ — सबसे बढ़िया तरीका</small></div></button>
+    </div>
+    <div class="note"><svg class="ic sm" style="margin-top:2px"><use href="#i-print"/></svg><div>प्रिंट डायलॉग में <b>Scale: 100% / Actual size</b> और <b>Margins: None</b> चुनें, तभी फोटो का साइज बिल्कुल सही आएगा।</div></div>
+    <details class="note"><summary><svg class="ic sm"><use href="#i-print"/></svg>प्रिंटर की बेस्ट क्वालिटी कैसे चुनें?</summary>
+      <p><b>1. प्रिंट डायलॉग में:</b> Scale = 100% / Actual size, Margins = None, "Background graphics" चालू (अगर दिखे)।</p>
+      <p><b>2. कंप्यूटर पर:</b> डायलॉग में "System dialog से प्रिंट करें" (Chrome: Ctrl+Shift+P) चुनें → Properties / Preferences → <b>Paper type: Photo Paper (Glossy / Matte)</b>, <b>Quality: Best / High / Photo</b>, Color चालू।</p>
+      <p><b>3. फोन पर:</b> प्रिंट सर्विस (HP Smart, Canon, Epson iPrint, Mopria) की "More options" में वही Paper type और Quality चुनें।</p>
+      <p><b>4. सबसे बढ़िया:</b> ऊपर वाला "PDF खोलकर प्रिंट" — PDF व्यूअर प्रिंटर ड्राइवर की अपनी पाइपलाइन से छापता है, इसलिए Quality / Paper type वहीं मिलते हैं।</p>
+      <p>प्रिंट दबाते ही आपके डिवाइस का प्रिंट डायलॉग खुलता है, जिसमें पहले से जुड़े सारे प्रिंटर (WiFi / USB / Bluetooth) दिखते हैं। सुरक्षा कारण से कोई वेब पेज प्रिंटर की सूची या ड्राइवर की Quality / Paper type सेटिंग खुद नहीं बदल सकता, और छपाई की असली प्रगति प्रिंटर की क्यू में दिखती है। कंप्यूटर पर बिना डायलॉग सीधा प्रिंट: Chrome को <b>--kiosk-printing</b> के साथ चलाएं।</p>
+    </details>
+  </div>
+</div>
+
+<div id="printSheet"></div>
+
+<div class="progress-overlay hidden" id="ov">
+  <div class="progress-box">
+    <div class="p-icon" id="pI">⏳</div>
+    <div class="p-title" id="pT">प्रोसेस हो रहा है…</div>
+    <div class="p-sub" id="pS">कृपया प्रतीक्षा करें</div>
+    <canvas id="pPrev" class="hidden" width="10" height="10"></canvas>
+    <div class="p-pct" id="pPct">0%</div>
+    <div class="pbg"><div class="pbf" id="pB"></div></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================
+   MR Photo Pro — Master build
+   सब कुछ एक ही फाइल में, ऑफलाइन काम करता है (कोई बाहरी लाइब्रेरी नहीं)
+   ========================================================= */
+const $ = id => document.getElementById(id);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+/* ---------- सुरक्षित स्टोरेज ---------- */
+const store = {
+  mem: {},
+  get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return k in this.mem ? this.mem[k] : d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { this.mem[k] = v; } },
+  del(k) { try { localStorage.removeItem(k); } catch (e) {} delete this.mem[k]; }
+};
+
+/* ---------- स्टेट ---------- */
+const DEF_S = {
+  W: 35, H: 45, bg: '#ffffff', N: 8, paper: 'A4', orient: 'port', margin: 6, gap: 2.5,
+  border: true, oneLine: false, fill: true, cut: false, newRow: false, nums: false,
+  dpi: 300, printDpi: 600, pdfMode: 'lossless', guide: true, name: '', date: '',
+  marginSplit: false, mL: 6, mR: 6, mT: 6, mB: 6, gapSplit: false, gapX: 2.5, gapY: 2.5,
+  borderCustom: false, borderW: 0.25, borderColor: '#222222', ribbon: false
+};
+const PAPERS = { A4: [210, 297], A5: [148, 210], A6: [105, 148], '4x6': [101.6, 152.4], '5x7': [127, 177.8], Letter: [215.9, 279.4] };
+const SIZES_DEF = [
+  { n: 'भारत पासपोर्ट', w: 35, h: 45 }, { n: '2×2 इंच / OCI', w: 51, h: 51 }, { n: 'स्टैंप', w: 25, h: 35 },
+  { n: 'लाइसेंस', w: 40, h: 50 }, { n: 'आईडी कार्ड', w: 30, h: 40 }, { n: 'चाइना वीजा', w: 33, h: 48 },
+  { n: 'स्क्वेयर', w: 35, h: 35 }, { n: '1×1 इंच', w: 25, h: 25 }
+];
+function loadSizes() {
+  const v = store.get('mrphoto_pro_sizes', null);
+  if (Array.isArray(v) && v.length) {
+    const ok = v.filter(x => x && typeof x.n === 'string' && +x.w >= 5 && +x.h >= 5).map(x => ({ n: x.n.slice(0, 24), w: +x.w, h: +x.h }));
+    if (ok.length) return ok;
+  }
+  return SIZES_DEF.map(x => ({ n: x.n, w: x.w, h: x.h }));
+}
+let SIZES = loadSizes();
+function saveSizes() { store.set('mrphoto_pro_sizes', SIZES); }
+const DEF_PRESETS = [
+  { name: 'पासपोर्ट 8 (A4)', W: 35, H: 45, N: 8, paper: 'A4', border: true, fill: true, oneLine: false },
+  { name: 'पासपोर्ट 6 (4×6)', W: 35, H: 45, N: 6, paper: '4x6', border: true, fill: true, oneLine: false },
+  { name: '2×2 वीजा 6', W: 51, H: 51, N: 6, paper: '4x6', border: true, fill: true, oneLine: false },
+  { name: 'स्टैंप 24 (A4)', W: 25, H: 35, N: 24, paper: 'A4', border: true, fill: true, oneLine: false },
+  { name: 'आईडी 12 (A4)', W: 30, H: 40, N: 12, paper: 'A4', border: true, fill: true, oneLine: false },
+  { name: 'पासपोर्ट 6 (एक लाइन)', W: 35, H: 45, N: 6, paper: 'A4', border: false, fill: true, oneLine: true }
+];
+
+let S = Object.assign({}, DEF_S);
+(function loadLast() {
+  const last = store.get('mrphoto_pro_last', null);
+  if (last && typeof last === 'object') Object.assign(S, last);
+  ['br', 'ct', 'sat', 'sharp', 'multi'].forEach(k => delete S[k]); // अब ये हर फोटो के अपने हैं
+  if (last && last.ribbon === undefined && (last.name || last.date)) S.ribbon = true;
+  sanitize();
+})();
+
+function sanitize() {
+  const num = (k, a, b) => { const v = parseFloat(S[k]); S[k] = clamp(isNaN(v) ? DEF_S[k] : v, a, b); };
+  num('W', 5, 280); num('H', 5, 280); num('N', 1, 100); num('margin', 0, 30); num('gap', 0, 20);
+  num('mL', 0, 40); num('mR', 0, 40); num('mT', 0, 40); num('mB', 0, 40); num('gapX', 0, 30); num('gapY', 0, 30); num('borderW', 0.1, 1.5);
+  S.N = Math.round(S.N);
+  if (!PAPERS[S.paper]) S.paper = 'A4';
+  if (!['port', 'land'].includes(S.orient)) S.orient = 'port'; // पुराना 'auto' भी पोर्ट्रेट बन जाएगा
+  if (!['lossless', 'jpeg'].includes(S.pdfMode)) S.pdfMode = 'lossless';
+  if (![300, 600, 720].includes(+S.printDpi)) S.printDpi = 600; S.printDpi = +S.printDpi;
+  if (![150, 200, 300, 400, 600].includes(+S.dpi)) S.dpi = 300; S.dpi = +S.dpi;
+  if (!/^#[0-9a-f]{6}$/i.test(S.bg)) S.bg = '#ffffff';
+  if (!/^#[0-9a-f]{6}$/i.test(S.borderColor)) S.borderColor = '#222222';
+  ['border', 'oneLine', 'fill', 'cut', 'guide', 'newRow', 'nums', 'marginSplit', 'gapSplit', 'borderCustom', 'ribbon'].forEach(k => S[k] = !!S[k]);
+  S.name = String(S.name || ''); S.date = String(S.date || '');
+}
+function persist() { store.set('mrphoto_pro_last', S); }
+
+/* ---------- फोटो ---------- */
+let photos = [];
+let active = 0;
+let pvPage = 0;
+const cur = () => photos[active] || null;
+
+function toast(msg, ms) {
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), ms || 2400);
+}
+function progress(title, sub, pct, icon, prev) {
+  $('ov').classList.remove('hidden');
+  $('pT').textContent = title || 'प्रोसेस हो रहा है…'; $('pS').textContent = sub || '';
+  $('pB').style.width = (pct || 0) + '%'; $('pPct').textContent = Math.round(pct || 0) + '%'; $('pI').textContent = icon || '⏳';
+  const pc = $('pPrev');
+  if (prev) {
+    const w = 150, h = Math.max(1, Math.round(w * prev.height / prev.width));
+    if (pc.width !== w || pc.height !== h) { pc.width = w; pc.height = h; }
+    const c = pc.getContext('2d'); c.imageSmoothingQuality = 'medium'; c.drawImage(prev, 0, 0, w, h); pc.classList.remove('hidden');
+  } else if (prev === null) pc.classList.add('hidden');
+}
+function hideProgress() { $('ov').classList.add('hidden'); $('pPrev').classList.add('hidden'); }
+const tick0 = () => new Promise(r => setTimeout(r, 0));
+const tick = () => new Promise(r => setTimeout(r, 30));
+
+function addPhotos(e) {
+  const files = Array.from(e.target.files || []).filter(f => /^image\//.test(f.type) || /\.(jpe?g|png|webp|heic|heif|bmp|gif)$/i.test(f.name));
+  e.target.value = '';
+  if (!files.length) { toast('कोई फोटो नहीं चुनी गई'); return; }
+  let done = 0, added = 0;
+  files.forEach(f => {
+    const url = URL.createObjectURL(f);
+    const img = new Image();
+    img.onload = () => {
+      photos.push({ id: Date.now() + Math.random(), url, img, w: img.naturalWidth, h: img.naturalHeight, name: f.name,
+        zoom: 1, ox: 0, oy: 0, rot: 0, fine: 0, flip: false, rmBg: false, tol: 40, cache: null,
+        copies: S.N, br: 100, ct: 100, sat: 100, sharp: 0 });
+      added++; fin();
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); toast('"' + f.name + '" खुल नहीं पाई (फॉर्मेट सपोर्ट नहीं)'); fin(); };
+    img.src = url;
+  });
+  function fin() {
+    if (++done < files.length) return;
+    if (added) { active = photos.length - 1; renderStrip(); syncEditor(); refresh(); toast(added + ' फोटो जुड़ गई ✓'); }
+  }
+}
+function removePhoto(i) {
+  const p = photos[i]; if (!p) return;
+  URL.revokeObjectURL(p.url); photos.splice(i, 1);
+  if (active >= photos.length) active = Math.max(0, photos.length - 1);
+  if (!photos.length) closeCrop();
+  renderStrip(); syncEditor(); refresh();
+}
+function clearPhotos() {
+  if (!photos.length) { toast('अभी कोई फोटो नहीं है'); return; }
+  if (!confirm('सभी फोटो हटाएं?')) return;
+  photos.forEach(p => URL.revokeObjectURL(p.url)); photos = []; active = 0; closeCrop();
+  renderStrip(); syncEditor(); refresh();
+}
+function slotRanges() {
+  const sl = plan().slots, first = {}, last = {};
+  sl.forEach((x, i) => { if (x.p) { const id = x.p.id; if (first[id] === undefined) first[id] = i + 1; last[id] = i + 1; } });
+  return photos.map(p => [first[p.id] || 0, last[p.id] || 0]);
+}
+function renderStrip() {
+  const rg = photos.length ? slotRanges() : [];
+  const h = photos.map((p, i) => {
+    const r = rg[i], lbl = r[0] === r[1] ? '' + r[0] : r[0] + '–' + r[1];
+    return '<div class="th' + (i === active ? ' on' : '') + '" data-i="' + i + '"><img src="' + p.url + '" alt=""><button class="x" data-x="' + i + '" aria-label="हटाएं">×</button><span class="rg">' + lbl + '</span></div>';
+  }).join('') + '<div class="th add" data-add="1"><svg class="ic"><use href="#i-plus"/></svg>जोड़ें</div>';
+  $('strip').innerHTML = h; $('edStrip').innerHTML = h; $('adjStrip').innerHTML = h;
+  $('photoLabel').textContent = photos.length ? photos.length + ' फोटो' : 'अभी कोई फोटो नहीं';
+  $('emptyCta').classList.toggle('hidden', photos.length > 0);
+  syncCopies(); syncAdjUI();
+}
+function stripClick(e, openEditor) {
+  const x = e.target.closest('[data-x]');
+  if (x) { e.stopPropagation(); removePhoto(+x.dataset.x); return; }
+  if (e.target.closest('[data-add]')) { $('fi').click(); return; }
+  const t = e.target.closest('.th');
+  if (t && t.dataset.i != null) {
+    active = +t.dataset.i; renderStrip(); syncEditor();
+    if (openEditor) openCrop(); else refresh();
+  }
+}
+$('strip').addEventListener('click', e => stripClick(e, true));
+$('edStrip').addEventListener('click', e => stripClick(e, false));
+$('adjStrip').addEventListener('click', e => stripClick(e, false));
+
+/* ---------- इमेज प्रोसेसिंग (फिल्टर / बैकग्राउंड) ---------- */
+function getProc(p, md) {
+  const sig = [p.br, p.ct, p.sat, p.sharp, p.rmBg ? p.tol : 0].join('|');
+  if (!p.cache || p.cache.sig !== sig) p.cache = { sig: sig, m: {}, order: [] };
+  const big = Math.max(p.w, p.h);
+  const plain = p.br === 100 && p.ct === 100 && p.sat === 100 && !p.sharp && !p.rmBg;
+  md = Math.min(big, Math.ceil(md / 200) * 200);
+  if (plain && md >= big) return p.img;
+  if (p.cache.m[md]) return p.cache.m[md];
+  const sc = md / big, cw = Math.max(1, Math.round(p.w * sc)), ch = Math.max(1, Math.round(p.h * sc));
+  const cv = document.createElement('canvas'); cv.width = cw; cv.height = ch;
+  const c = cv.getContext('2d', { willReadFrequently: true });
+  c.imageSmoothingEnabled = true; c.imageSmoothingQuality = 'high';
+  c.drawImage(p.img, 0, 0, cw, ch);
+  if (!plain) {
+    try { const id = c.getImageData(0, 0, cw, ch); processData(id, p); c.putImageData(id, 0, 0); }
+    catch (err) { console.warn('process fail', err); }
+  }
+  p.cache.m[md] = cv; p.cache.order.push(md);
+  while (p.cache.order.length > 3) delete p.cache.m[p.cache.order.shift()];
+  return cv;
+}
+function processData(id, p) {
+  const d = id.data, w = id.width, h = id.height;
+  if (p.rmBg) {
+    const a = bgAlpha(d, w, h, p.tol);
+    for (let i = 0, j = 3; i < a.length; i++, j += 4) d[j] = a[i];
+  }
+  if (p.br !== 100 || p.ct !== 100 || p.sat !== 100) {
+    const b = p.br / 100, cc = p.ct / 100, s = p.sat / 100, lut = new Uint8ClampedArray(256);
+    for (let v = 0; v < 256; v++) lut[v] = (Math.min(255, v * b) - 128) * cc + 128;
+    for (let i = 0; i < d.length; i += 4) {
+      let r = lut[d[i]], g = lut[d[i + 1]], bl = lut[d[i + 2]];
+      if (s !== 1) {
+        const gr = 0.299 * r + 0.587 * g + 0.114 * bl;
+        r = gr + (r - gr) * s; g = gr + (g - gr) * s; bl = gr + (bl - gr) * s;
+      }
+      d[i] = r; d[i + 1] = g; d[i + 2] = bl;
+    }
+  }
+  if (p.sharp) sharpen(d, w, h, p.sharp / 100 * 1.3);
+}
+function sharpen(d, w, h, amt) {
+  const src = new Uint8ClampedArray(d);
+  for (let y = 1; y < h - 1; y++) {
+    for (let x = 1; x < w - 1; x++) {
+      const i = (y * w + x) * 4;
+      for (let c = 0; c < 3; c++) {
+        const k = i + c;
+        const bl = (src[k - 4 - w * 4] + src[k - w * 4] + src[k + 4 - w * 4] + src[k - 4] + src[k] + src[k + 4] + src[k - 4 + w * 4] + src[k + w * 4] + src[k + 4 + w * 4]) / 9;
+        d[k] = src[k] + amt * (src[k] - bl);
+      }
+    }
+  }
+}
+function median(a) { a.sort((x, y) => x - y); return a[a.length >> 1] || 255; }
+function bgAlpha(d, w, h, tol) {
+  const rs = [], gs = [], bs = [], step = Math.max(1, Math.floor(w / 60)), rowsMax = Math.floor(h * 0.6);
+  const add = (x, y) => { const k = (y * w + x) * 4; rs.push(d[k]); gs.push(d[k + 1]); bs.push(d[k + 2]); };
+  for (let x = 0; x < w; x += step) { add(x, 0); add(x, Math.min(1, h - 1)); }
+  for (let y = 0; y < rowsMax; y += step) { add(0, y); add(w - 1, y); add(Math.min(1, w - 1), y); add(Math.max(0, w - 2), y); }
+  const R = median(rs), G = median(gs), B = median(bs), T = Math.pow(tol * 1.7, 2);
+  const n = w * h, vis = new Uint8Array(n), st = new Int32Array(n); let sp = 0;
+  const seed = i => {
+    if (vis[i]) return; const k = i * 4, dr = d[k] - R, dg = d[k + 1] - G, db = d[k + 2] - B;
+    if (dr * dr + dg * dg + db * db <= T) { vis[i] = 1; st[sp++] = i; }
+  };
+  for (let x = 0; x < w; x++) { seed(x); seed((h - 1) * w + x); }
+  for (let y = 0; y < h; y++) { seed(y * w); seed(y * w + w - 1); }
+  while (sp) {
+    const i = st[--sp], x = i % w;
+    if (x > 0) seed(i - 1); if (x < w - 1) seed(i + 1); if (i >= w) seed(i - w); if (i < n - w) seed(i + w);
+  }
+  const a = new Uint8Array(n); for (let i = 0; i < n; i++) a[i] = vis[i] ? 0 : 255;
+  const t = new Uint8Array(n), o = new Uint8Array(n);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const i = y * w + x; t[i] = (a[x > 0 ? i - 1 : i] + a[i] + a[x < w - 1 ? i + 1 : i]) / 3;
+  }
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const i = y * w + x; o[i] = (t[y > 0 ? i - w : i] + t[i] + t[y < h - 1 ? i + w : i]) / 3;
+  }
+  return o;
+}
+
+/* ---------- एक फोटो को रेक्ट में बनाना (एडिटर, प्रीव्यू, प्रिंट — सब में यही) ---------- */
+function needMd(p, w, h) { // इस टाइल में 1:1 क्वालिटी के लिए कैश इमेज की लंबी साइड कितनी चाहिए
+  const r = ((p.rot % 4) + 4) % 4, rw = r % 2 ? p.h : p.w, rh = r % 2 ? p.w : p.h;
+  const s0 = S.fill ? Math.max(w / rw, h / rh) : Math.min(w / rw, h / rh);
+  return Math.max(p.w, p.h) * s0 * p.zoom;
+}
+function drawPhotoInto(c, p, x, y, w, h, cap) {
+  c.save(); c.beginPath(); c.rect(x, y, w, h); c.clip();
+  c.fillStyle = S.bg; c.fillRect(x, y, w, h);
+  if (p) {
+    const src = getProc(p, clamp(needMd(p, w, h) * 1.3, 300, cap));
+    const sw = src.width || src.naturalWidth, sh = src.height || src.naturalHeight, r = ((p.rot % 4) + 4) % 4;
+    const rw = r % 2 ? sh : sw, rh = r % 2 ? sw : sh;
+    const s0 = S.fill ? Math.max(w / rw, h / rh) : Math.min(w / rw, h / rh), s = s0 * p.zoom;
+    c.translate(x + w / 2 + p.ox * w, y + h / 2 + p.oy * h);
+    c.rotate(r * Math.PI / 2 + p.fine * Math.PI / 180);
+    c.scale(p.flip ? -s : s, s);
+    c.imageSmoothingEnabled = true; c.imageSmoothingQuality = 'high';
+    c.drawImage(src, -sw / 2, -sh / 2);
+  }
+  c.restore();
+}
+
+/* ---------- लेआउट इंजन (mm में) ---------- */
+function layoutFor(orient, n, ov) {
+  ov = ov || {};
+  const Wm = ov.W || S.W, Hm = ov.H || S.H, pk = ov.paper || S.paper;
+  let pw0 = PAPERS[pk][0], ph0 = PAPERS[pk][1];
+  if (orient === 'land') { const t = pw0; pw0 = ph0; ph0 = t; }
+  const one = S.oneLine && !ov.noOne;
+  let mL = S.marginSplit ? S.mL : S.margin, mR = S.marginSplit ? S.mR : S.margin;
+  const mT = S.marginSplit ? S.mT : S.margin, mB = S.marginSplit ? S.mB : S.margin;
+  let gx = S.gapSplit ? S.gapX : S.gap, gy = S.gapSplit ? S.gapY : S.gap;
+  if (one) { gx = Math.min(gx, 2); if (!S.marginSplit) { mL = Math.min(mL, 2); mR = Math.min(mR, 2); } } // एक लाइन: दाएं-बाएं ज्यादा से ज्यादा 2 mm
+  const rib = (S.ribbon && (S.name || S.date)) ? 7 : 0;
+  const uW = Math.max(10, pw0 - mL - mR), uH = Math.max(10, ph0 - mT - mB - rib);
+  let pw = Wm, ph = Hm, cols, rowsPer, perPage;
+  if (one) {
+    cols = Math.max(1, n); pw = Math.min(Wm, (uW - (cols - 1) * gx) / cols); ph = pw * Hm / Wm;
+    if (ph > uH) { ph = uH; pw = ph * Wm / Hm; }
+    rowsPer = 1; perPage = cols;
+  } else {
+    if (pw > uW) { pw = uW; ph = pw * Hm / Wm; }
+    if (ph > uH) { ph = uH; pw = ph * Wm / Hm; }
+    cols = Math.max(1, Math.floor((uW + gx + 1e-6) / (pw + gx)));
+    rowsPer = Math.max(1, Math.floor((uH + gy + 1e-6) / (ph + gy)));
+    perPage = cols * rowsPer;
+  }
+  return { pw0, ph0, mL, mR, mT, mB, gx, gy, g: Math.min(gx, gy), rib, uW, uH, pw, ph, cols, rowsPer, perPage, orient, one };
+}
+function getLayout(n, ov) {
+  n = n || S.N;
+  return layoutFor(S.orient, n, ov); // दिशा सिर्फ यूज़र के चुनने पर बदलती है
+}
+function capacity(w, h, paper) { return getLayout(100000, { W: w, H: h, paper: paper, noOne: true }); }
+/* क्रम: हर फोटो के कॉपी का ब्लॉक, पिछली फोटो के बाद (1-6, 7-12, …) */
+function totalCopies() { return photos.length ? photos.reduce((a, p) => a + p.copies, 0) : S.N; }
+function buildSlots(L) {
+  const out = [];
+  if (!photos.length) { for (let i = 0; i < S.N; i++) out.push({ p: null }); return out; }
+  photos.forEach((p, pi) => {
+    for (let i = 0; i < p.copies; i++) out.push({ p: p });
+    if (S.newRow && !L.one && pi < photos.length - 1) { const r = out.length % L.cols; if (r) for (let k = 0; k < L.cols - r; k++) out.push({ p: null, blank: true }); }
+  });
+  return out;
+}
+function plan() {
+  const L = getLayout(totalCopies()), slots = buildSlots(L);
+  return { L: L, slots: slots, pages: L.one ? 1 : Math.max(1, Math.ceil(slots.length / L.perPage)) };
+}
+
+/* ---------- शीट रेंडर (एक ही इंजन: प्रीव्यू + प्रिंट + PDF + JPG) ---------- */
+function sheetPrep(pi, dpi, L, slots, quality, nums) {
+  const k = dpi / 25.4, cv = document.createElement('canvas');
+  cv.width = Math.round(L.pw0 * k); cv.height = Math.round(L.ph0 * k);
+  const c = cv.getContext('2d'); if (!c) throw new Error('canvas');
+  c.fillStyle = '#fff'; c.fillRect(0, 0, cv.width, cv.height);
+  if (c.getImageData(0, 0, 1, 1).data[3] !== 255) throw new Error('canvas');
+  const start = pi * L.perPage, count = Math.max(0, Math.min(L.perPage, slots.length - start));
+  const colsUsed = Math.min(L.cols, count), gridW = colsUsed * L.pw + (colsUsed - 1) * L.gx;
+  const ox = L.mL + (L.uW - gridW) / 2, y0 = L.mT + L.rib;
+  if (L.rib) {
+    c.fillStyle = '#111'; c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.font = '700 ' + (3.4 * k) + 'px system-ui,"Noto Sans Devanagari",Arial,sans-serif';
+    c.fillText((S.name || '') + (S.name && S.date ? '  •  ' : '') + (S.date || ''), (L.mL + L.uW / 2) * k, (L.mT + 3.2) * k, L.uW * k);
+  }
+  return { cv: cv, c: c, k: k, L: L, slots: slots, start: start, count: count, ox: ox, y0: y0, quality: quality, nums: nums, lw: Math.max(1, (S.borderCustom ? S.borderW : 0.25) * k), bc: S.borderCustom ? S.borderColor : '#222222' };
+}
+function sheetTile(o, i) {
+  const c = o.c, k = o.k, L = o.L, sl = o.slots[o.start + i]; if (!sl || sl.blank) return;
+  const col = i % L.cols, row = Math.floor(i / L.cols);
+  const x = (o.ox + col * (L.pw + L.gx)) * k, y = (o.y0 + row * (L.ph + L.gy)) * k, w = L.pw * k, h = L.ph * k, lw = o.lw;
+  drawPhotoInto(c, sl.p, x, y, w, h, o.quality ? 1e9 : 1000);
+  if (S.border) { c.strokeStyle = o.bc; c.lineWidth = lw; c.strokeRect(x + lw / 2, y + lw / 2, w - lw, h - lw); }
+  if (S.cut && L.g >= 1.2) {
+    const ml = Math.min(1.8, L.g - 0.5) * k, off = 0.3 * k;
+    c.strokeStyle = '#000'; c.lineWidth = Math.max(1, 0.15 * k); c.beginPath();
+    [[x, y, -1, -1], [x + w, y, 1, -1], [x, y + h, -1, 1], [x + w, y + h, 1, 1]].forEach(q => {
+      c.moveTo(q[0] + q[2] * off, q[1] + q[3] * off); c.lineTo(q[0] + q[2] * (off + ml), q[1] + q[3] * off);
+      c.moveTo(q[0] + q[2] * off, q[1] + q[3] * off); c.lineTo(q[0] + q[2] * off, q[1] + q[3] * (off + ml));
+    });
+    c.stroke();
+  }
+  if (o.nums) { // सिर्फ प्रीव्यू के लिए
+    const r = Math.max(7, Math.min(w, h) * 0.13);
+    c.fillStyle = 'rgba(15,31,25,.88)'; c.beginPath(); c.arc(x + r + 2, y + r + 2, r, 0, 7); c.fill();
+    c.fillStyle = '#fff'; c.font = '800 ' + (r * 1.05) + 'px system-ui,sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.fillText(String(o.start + i + 1), x + r + 2, y + r + 2.5);
+  }
+}
+function renderSheet(pi, dpi, L, quality, slots, nums) {
+  const o = sheetPrep(pi, dpi, L, slots, quality, nums);
+  for (let i = 0; i < o.count; i++) sheetTile(o, i);
+  return o.cv;
+}
+
+/* ---------- लाइव प्रीव्यू (कटिंग-मैट स्टेज) ---------- */
+let pend = false, cropOpen = false, sheetDirty = false;
+function refresh() {
+  if (pend) return; pend = true;
+  requestAnimationFrame(() => { pend = false; drawAll(); });
+}
+function drawRulers(L, sc, cssW, cssH) {
+  const dpr = Math.min(window.devicePixelRatio || 1, 2), T = $('rulerT'), Lc = $('rulerL');
+  T.width = Math.round(cssW * dpr); T.height = Math.round(16 * dpr); T.style.width = cssW + 'px'; T.style.height = '16px';
+  Lc.width = Math.round(16 * dpr); Lc.height = Math.round(cssH * dpr); Lc.style.width = '16px'; Lc.style.height = cssH + 'px';
+  const draw = (cv, len, horiz) => {
+    const c = cv.getContext('2d'); c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, cv.width, cv.height);
+    c.strokeStyle = 'rgba(255,255,255,.8)'; c.fillStyle = 'rgba(255,255,255,.85)'; c.lineWidth = 1; c.font = '600 9px system-ui,sans-serif';
+    c.textBaseline = 'middle'; c.beginPath();
+    const fine = sc >= 2.4, lstep = sc * 10 >= 26 ? 10 : sc * 20 >= 26 ? 20 : 50;
+    for (let mm = 0; mm <= len; mm++) {
+      if (!fine && mm % 5) continue;
+      const pos = mm * sc + .5, tl = mm % 10 === 0 ? 11 : mm % 5 === 0 ? 7 : 4;
+      if (horiz) { c.moveTo(pos, 16); c.lineTo(pos, 16 - tl); } else { c.moveTo(16, pos); c.lineTo(16 - tl, pos); }
+      if (mm % lstep === 0 && mm > 0 && pos + 15 < len * sc) { if (horiz) c.fillText(mm / 10, pos + 2.5, 5); else c.fillText(mm / 10, 1, pos + 8); }
+    }
+    c.stroke();
+  };
+  draw(T, L.pw0, true); draw(Lc, L.ph0, false);
+}
+function drawAll() {
+  persist();
+  if (cropOpen) { drawEditor(); sheetDirty = true; return; }
+  sheetDirty = false;
+  const PL = plan(), L = PL.L, pages = PL.pages;
+  pvPage = clamp(pvPage, 0, pages - 1);
+  const st = $('stage'), cs = getComputedStyle(st);
+  const aw = st.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight) - 16;
+  const ah = st.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - 16;
+  const sc = Math.max(0.3, Math.min(aw / L.pw0, ah / L.ph0)), cssW = Math.round(L.pw0 * sc), cssH = Math.round(L.ph0 * sc);
+  const dpr = Math.min(window.devicePixelRatio || 1, 2), dpi = clamp(cssW * dpr / L.pw0 * 25.4, 60, 220);
+  const sheet = renderSheet(pvPage, dpi, L, false, PL.slots, S.nums), cv = $('pvCv');
+  cv.width = sheet.width; cv.height = sheet.height; cv.style.width = cssW + 'px'; cv.style.height = cssH + 'px';
+  cv.getContext('2d').drawImage(sheet, 0, 0);
+  drawRulers(L, sc, cssW, cssH);
+  const total = totalCopies(), rows = L.one ? 1 : Math.ceil(Math.min(PL.slots.length, L.perPage) / L.cols);
+  const orientTxt = L.orient === 'land' ? 'लैंडस्केप' : 'पोर्ट्रेट';
+  const info = L.one
+    ? 'कुल ' + total + ' फोटो एक लाइन में · ' + L.pw.toFixed(1) + '×' + L.ph.toFixed(1) + ' mm · ' + S.paper + ' ' + orientTxt
+    : 'कुल ' + total + ' फोटो · ' + L.cols + '×' + rows + (pages > 1 ? '/पेज' : '') + ' · ' + S.W + '×' + S.H + ' mm · ' + S.paper + ' ' + orientTxt;
+  $('layoutInfo').textContent = info;
+  $('pager').classList.toggle('hidden', pages < 2);
+  $('pgLabel').textContent = (pvPage + 1) + ' / ' + pages;
+  const warns = [];
+  if (!L.one && (L.pw < S.W - 0.05)) warns.push('साइज पेपर में फिट करने के लिए ≈ ' + L.pw.toFixed(1) + '×' + L.ph.toFixed(1) + ' mm किया गया');
+  if (pages > 1) warns.push('एक पेज पर ' + L.perPage + ' फोटो → ' + pages + ' पेज बनेंगे');
+  if (L.one && L.pw < S.W * 0.6) warns.push('एक लाइन में बहुत ज्यादा फोटो हैं, काफी छोटी हो गईं');
+  if (S.cut && L.g < 2) warns.push('कटिंग मार्क के लिए गैप 2 mm या ज्यादा रखें');
+  $('warnBox').classList.toggle('hidden', !warns.length); $('warnBox').textContent = warns.join(' • ');
+  $('sizeCap').innerHTML = '<b>' + S.paper + '</b> पर ' + S.W + '×' + S.H + ' mm की <b>' + capacity(S.W, S.H, S.paper).perPage + ' फोटो</b> एक पेज पर आती हैं';
+  syncCopies(true);
+}
+function pg(d) { pvPage = clamp(pvPage + d, 0, plan().pages - 1); drawAll(); }
+
+/* ---------- क्रॉप एडिटर ---------- */
+function sizeEditor() {
+  const cv = $('edCv'), wrap = $('edWrap');
+  const aw = Math.max(100, wrap.clientWidth - 24), ah = Math.max(100, wrap.clientHeight - 24);
+  const sc = Math.min(aw / S.W, ah / S.H), cssW = Math.round(S.W * sc), cssH = Math.round(S.H * sc), dpr = Math.min(window.devicePixelRatio || 1, 2);
+  cv.style.width = cssW + 'px'; cv.style.height = cssH + 'px';
+  if (cv.width !== Math.round(cssW * dpr) || cv.height !== Math.round(cssH * dpr)) { cv.width = Math.round(cssW * dpr); cv.height = Math.round(cssH * dpr); }
+}
+function drawEditor() {
+  if (!cropOpen || !cur()) return;
+  sizeEditor();
+  const cv = $('edCv'), c = cv.getContext('2d'), w = cv.width, h = cv.height;
+  c.clearRect(0, 0, w, h);
+  drawPhotoInto(c, cur(), 0, 0, w, h, 1400);
+  if (S.guide) {
+    c.save(); c.strokeStyle = 'rgba(255,179,0,.95)'; c.lineWidth = Math.max(1.5, w / 150); c.setLineDash([w / 28, w / 42]);
+    c.beginPath(); c.ellipse(w * 0.5, h * 0.44, w * 0.27, h * 0.34, 0, 0, Math.PI * 2); c.stroke();
+    c.setLineDash([w / 60, w / 40]); c.strokeStyle = 'rgba(255,179,0,.7)';
+    c.beginPath(); c.moveTo(w * 0.12, h * 0.40); c.lineTo(w * 0.88, h * 0.40); c.stroke();
+    c.restore();
+  }
+}
+function syncEditor() {
+  const p = cur(); if (!p) return;
+  $('edZoom').value = Math.round(p.zoom * 100); $('vZoom').textContent = Math.round(p.zoom * 100) + '%';
+  $('edFine').value = p.fine; $('vFine').textContent = p.fine + '°';
+  $('tRmBg').classList.toggle('on', p.rmBg); $('tolBox').classList.toggle('hidden', !p.rmBg);
+  $('tolR').value = p.tol; $('vTol').textContent = p.tol;
+}
+function zoomStep(d) { const p = cur(); if (!p) return; p.zoom = clamp(Math.round((p.zoom + d) * 100) / 100, 0.2, 5); syncEditor(); refresh(); }
+function openCrop() {
+  if (!photos.length) { toast('पहले फोटो जोड़ें'); return; }
+  $('crop').classList.remove('hidden'); document.body.classList.add('noscroll'); cropOpen = true;
+  renderStrip(); syncEditor(); requestAnimationFrame(() => { drawEditor(); requestAnimationFrame(drawEditor); });
+}
+function closeCrop() {
+  if (!cropOpen) return;
+  cropOpen = false; $('crop').classList.add('hidden'); document.body.classList.remove('noscroll');
+  refresh();
+}
+function openOutput() {
+  if (!photos.length) { toast('पहले फोटो जोड़ें!'); return; }
+  $('outModal').classList.remove('hidden'); document.body.classList.add('noscroll');
+}
+function closeOutput() { $('outModal').classList.add('hidden'); if (!cropOpen) document.body.classList.remove('noscroll'); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { if (!$('outModal').classList.contains('hidden')) closeOutput(); else closeCrop(); } });
+function edSet(k, v) {
+  const p = cur(); if (!p) return; p[k] = v;
+  if (k === 'zoom') $('vZoom').textContent = Math.round(v * 100) + '%';
+  if (k === 'fine') $('vFine').textContent = v + '°';
+  if (k === 'tol') $('vTol').textContent = v;
+  refresh();
+}
+function rotate(d) { const p = cur(); if (!p) return; p.rot = ((p.rot + d) % 4 + 4) % 4; p.ox = 0; p.oy = 0; refresh(); }
+function flipPhoto() { const p = cur(); if (!p) return; p.flip = !p.flip; refresh(); }
+function resetPhoto() { const p = cur(); if (!p) return; Object.assign(p, { zoom: 1, ox: 0, oy: 0, rot: 0, fine: 0, flip: false }); syncEditor(); refresh(); }
+function applyToAll() {
+  const p = cur(); if (!p) { toast('पहले फोटो जोड़ें'); return; }
+  photos.forEach(q => { q.zoom = p.zoom; q.ox = p.ox; q.oy = p.oy; q.fine = p.fine; q.tol = p.tol; q.rmBg = p.rmBg; });
+  refresh(); toast('ज़ूम / पोजीशन / बैकग्राउंड सेटिंग सभी फोटो पर लागू ✓');
+}
+function toggleRmBg() {
+  const p = cur(); if (!p) { toast('पहले फोटो जोड़ें'); return; }
+  p.rmBg = !p.rmBg; syncEditor(); refresh();
+}
+async function autoFace() {
+  const p = cur(); if (!p) { toast('पहले फोटो जोड़ें'); return; }
+  if (!('FaceDetector' in window)) {
+    Object.assign(p, { zoom: 1, ox: 0, oy: 0, rot: 0, fine: 0, flip: false }); syncEditor(); refresh();
+    toast('इस ब्राउज़र में चेहरा-पहचान नहीं है। फोटो खिसकाकर चेहरा गाइड ओवल में लाएं।', 3800); return;
+  }
+  try {
+    const f = await new FaceDetector({ fastMode: true, maxDetectedFaces: 1 }).detect(p.img);
+    if (!f.length) { toast('चेहरा नहीं मिला — खुद एडजस्ट करें'); return; }
+    const b = f[0].boundingBox; p.rot = 0; p.fine = 0; p.flip = false;
+    const s0 = S.fill ? Math.max(S.W / p.w, S.H / p.h) : Math.min(S.W / p.w, S.H / p.h);
+    const headH = b.height * 1.45, s = 0.72 * S.H / headH;
+    p.zoom = clamp(s / s0, 0.3, 5);
+    const px = b.x + b.width / 2 - p.w / 2, py = b.y + b.height / 2 - 0.22 * b.height - p.h / 2;
+    p.ox = -px * s / S.W; p.oy = (0.44 - 0.5) - py * s / S.H;
+    syncEditor(); refresh(); toast('चेहरा सेट हो गया ✓');
+  } catch (e) { toast('ऑटो क्रॉप नहीं चला — खुद एडजस्ट करें'); }
+}
+/* ड्रैग + पिंच */
+(function () {
+  const cv = $('edCv'), ptrs = new Map(); let lastD = 0;
+  cv.addEventListener('pointerdown', e => { ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY }); try { cv.setPointerCapture(e.pointerId); } catch (_) {} if (ptrs.size === 2) lastD = dist(); e.preventDefault(); });
+  cv.addEventListener('pointermove', e => {
+    const p = cur(); if (!p || !ptrs.has(e.pointerId)) return;
+    const prev = ptrs.get(e.pointerId), r = cv.getBoundingClientRect();
+    ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (ptrs.size === 1) { p.ox += (e.clientX - prev.x) / r.width; p.oy += (e.clientY - prev.y) / r.height; }
+    else if (ptrs.size === 2) { const d = dist(); if (lastD) p.zoom = clamp(p.zoom * d / lastD, 0.2, 5); lastD = d; syncEditor(); }
+    refresh();
+  });
+  const up = e => { ptrs.delete(e.pointerId); lastD = 0; };
+  cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up); cv.addEventListener('pointerleave', up);
+  cv.addEventListener('wheel', e => { const p = cur(); if (!p) return; e.preventDefault(); p.zoom = clamp(p.zoom * Math.exp(-e.deltaY * 0.0012), 0.2, 5); syncEditor(); refresh(); }, { passive: false });
+  function dist() { const a = Array.from(ptrs.values()); return a.length < 2 ? 0 : Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y); }
+})();
+
+/* ---------- साइज ---------- */
+let sizeEdit = false, seIdx = -1;
+function buildSizes() {
+  $('sizeGrid').classList.toggle('editing', sizeEdit);
+  $('sizeGrid').innerHTML = SIZES.map((s, i) =>
+    '<div class="size-card" tabindex="0" data-i="' + i + '">' + (sizeEdit ? '<span class="pen"><svg class="ic"><use href="#i-edit"/></svg></span>' : '') +
+    '<span class="glyph"><i style="aspect-ratio:' + s.w + '/' + s.h + '"></i></span>' + esc(s.n) + '<span class="dim">' + s.w + '×' + s.h + ' mm</span></div>').join('') +
+    (sizeEdit
+      ? '<div class="size-card" tabindex="0" id="addSizeCard"><span class="glyph"><svg class="ic"><use href="#i-plus"/></svg></span>नया साइज<span class="dim">जोड़ें</span></div>'
+      : '<div class="size-card" tabindex="0" id="customCard"><span class="glyph"><svg class="ic"><use href="#i-plus"/></svg></span>कस्टम<span class="dim">खुद सेट करें</span></div>');
+  $('sizeEditTools').classList.toggle('hidden', !sizeEdit);
+  $('sizeEditBtn').textContent = sizeEdit ? '✓ हो गया' : '✎ एडिट';
+  if (!sizeEdit) $('sizeEditBox').classList.add('hidden');
+}
+$('sizeGrid').addEventListener('click', e => {
+  const c = e.target.closest('.size-card'); if (!c) return;
+  if (c.id === 'customCard') { toggleCustomBox(); return; }
+  if (c.id === 'addSizeCard') { startNewSize(); return; }
+  const i = +c.dataset.i;
+  if (sizeEdit) { openSizeEdit(i); return; }
+  const s = SIZES[i]; S.W = s.w; S.H = s.h; $('customBox').classList.add('hidden'); syncUI(); refresh();
+});
+function toggleSizeEdit() {
+  sizeEdit = !sizeEdit; $('customBox').classList.add('hidden'); buildSizes(); syncUI();
+  if (sizeEdit) toast('जिस साइज को बदलना है उस पर टैप करें');
+}
+function openSizeEdit(i) {
+  const s = SIZES[i]; if (!s) return; seIdx = i;
+  $('seTitle').textContent = 'साइज एडिट करें'; $('seName').value = s.n; $('seW').value = s.w; $('seH').value = s.h;
+  $('seDel').classList.toggle('hidden', SIZES.length < 2); $('sizeEditBox').classList.remove('hidden'); $('seName').focus();
+}
+function startNewSize() {
+  seIdx = -1; $('seTitle').textContent = 'नया साइज जोड़ें'; $('seName').value = ''; $('seW').value = S.W; $('seH').value = S.H;
+  $('seDel').classList.add('hidden'); $('sizeEditBox').classList.remove('hidden'); $('seName').focus();
+}
+function cancelSizeEdit() { $('sizeEditBox').classList.add('hidden'); seIdx = -1; }
+function saveSizeEdit() {
+  const w = parseFloat($('seW').value), h = parseFloat($('seH').value);
+  if (!(w >= 10 && w <= 280 && h >= 10 && h <= 280)) { toast('चौड़ाई / ऊँचाई 10 से 280 mm के बीच डालें'); return; }
+  const n = ($('seName').value.trim() || (w + '×' + h)).slice(0, 24);
+  if (seIdx >= 0) {
+    const old = SIZES[seIdx], wasActive = old.w === S.W && old.h === S.H;
+    SIZES[seIdx] = { n: n, w: w, h: h }; if (wasActive) { S.W = w; S.H = h; }
+  } else SIZES.push({ n: n, w: w, h: h });
+  saveSizes(); cancelSizeEdit(); buildSizes(); syncUI(); refresh(); toast('"' + n + '" सेव हो गया ✓');
+}
+function deleteSize() {
+  if (seIdx < 0 || SIZES.length < 2) return;
+  if (!confirm('"' + SIZES[seIdx].n + '" साइज हटाएं?')) return;
+  SIZES.splice(seIdx, 1); saveSizes(); cancelSizeEdit(); buildSizes(); syncUI(); toast('साइज हटा दिया');
+}
+function resetSizes() {
+  if (!confirm('सारे साइज डिफ़ॉल्ट पर लौटाएं? (आपके बदलाव हट जाएंगे)')) return;
+  SIZES = SIZES_DEF.map(x => ({ n: x.n, w: x.w, h: x.h })); saveSizes(); cancelSizeEdit(); buildSizes(); syncUI(); toast('डिफ़ॉल्ट साइज वापस ✓');
+}
+$('sizeGrid').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } });
+function toggleCustomBox() {
+  $('customBox').classList.toggle('hidden'); $('cW').value = S.W; $('cH').value = S.H; renderCustoms(); showCap();
+}
+function showCap() {
+  const w = parseFloat($('cW').value), h = parseFloat($('cH').value);
+  if (!w || !h || w < 5 || h < 5) { $('capBox').textContent = 'सही चौड़ाई और ऊँचाई डालें'; return; }
+  const a = capacity(w, h, 'A4'), b = capacity(w, h, '4x6');
+  $('capBox').innerHTML = '<b>A4:</b> ' + a.cols + ' × ' + a.rowsPer + ' = <b>' + a.perPage + ' फोटो</b><br><b>4×6 इंच:</b> ' + b.cols + ' × ' + b.rowsPer + ' = <b>' + b.perPage + ' फोटो</b>';
+}
+function applyCustom() {
+  const w = parseFloat($('cW').value), h = parseFloat($('cH').value);
+  if (!w || !h || w < 10 || h < 10) { toast('कम से कम 10 mm का सही साइज डालें'); return; }
+  S.W = w; S.H = h;
+  let cs = store.get('mrphoto_pro_customs', []);
+  if (!cs.find(c => c.w === w && c.h === h)) { cs.unshift({ w: w, h: h }); store.set('mrphoto_pro_customs', cs.slice(0, 10)); }
+  S.N = clamp(capacity(w, h, S.paper).perPage, 1, 200);
+  syncUI(); renderCustoms(); refresh(); toast('कस्टम साइज लागू • ' + S.N + ' फोटो (एक पेज) सेट');
+}
+function renderCustoms() {
+  $('customPresets').innerHTML = allPresets().map((p, i) =>
+    '<span class="saved-chip" onclick="applyPreset(' + i + ')">' + esc(p.name) + '</span>').join('');
+  const cs = store.get('mrphoto_pro_customs', []);
+  $('savedCustom').innerHTML = cs.length
+    ? cs.map(c => '<span class="saved-chip" onclick="useCustom(' + c.w + ',' + c.h + ')">' + c.w + '×' + c.h + ' <small>(' + capacity(c.w, c.h, 'A4').perPage + ')</small></span>').join('')
+    : '<span style="font-size:.76rem;color:#94a3b8">अभी कोई सेव्ड साइज नहीं</span>';
+}
+function useCustom(w, h) { $('cW').value = w; $('cH').value = h; showCap(); applyCustom(); }
+function clearCustoms() { store.del('mrphoto_pro_customs'); renderCustoms(); toast('सेव्ड कस्टम साइज हटा दिए'); }
+
+/* ---------- रंग / एडजस्टमेंट ---------- */
+function setBg(c) { S.bg = c; syncUI(); refresh(); }
+const ADJ_DEF = { br: 100, ct: 100, sat: 100, sharp: 0 };
+function adj(k, v) { const p = cur(); if (!p) { toast('पहले फोटो जोड़ें'); syncAdjUI(); return; } p[k] = v; syncAdjLabels(); refresh(); }
+function syncAdjLabels() {
+  const p = cur() || ADJ_DEF;
+  $('vBr').textContent = p.br + '%'; $('vCt').textContent = p.ct + '%'; $('vSat').textContent = p.sat + '%'; $('vSharp').textContent = p.sharp + '%';
+  $('adjWho').textContent = cur() ? 'फोटो ' + (active + 1) : 'कोई फोटो नहीं';
+}
+function syncAdjUI() { const p = cur() || ADJ_DEF; $('sBr').value = p.br; $('sCt').value = p.ct; $('sSat').value = p.sat; $('sSharp').value = p.sharp; syncAdjLabels(); }
+function resetAdj() { const p = cur(); if (!p) { toast('पहले फोटो जोड़ें'); return; } Object.assign(p, ADJ_DEF); syncAdjUI(); refresh(); toast('फोटो ' + (active + 1) + ' का एडजस्टमेंट रीसेट ✓'); }
+function adjToAll() {
+  const p = cur(); if (!p) { toast('पहले फोटो जोड़ें'); return; }
+  photos.forEach(q => { q.br = p.br; q.ct = p.ct; q.sat = p.sat; q.sharp = p.sharp; }); refresh(); toast('सब फोटो पर लागू ✓');
+}
+function autoEnhance() {
+  const p = cur(); if (!p) { toast('पहले फोटो जोड़ें'); return; }
+  const cv = document.createElement('canvas'), sc = 120 / Math.max(p.w, p.h); cv.width = Math.max(1, Math.round(p.w * sc)); cv.height = Math.max(1, Math.round(p.h * sc));
+  const c = cv.getContext('2d', { willReadFrequently: true }); c.drawImage(p.img, 0, 0, cv.width, cv.height);
+  const d = c.getImageData(0, 0, cv.width, cv.height).data; let sum = 0, n = 0, mn = 255, mx = 0;
+  for (let i = 0; i < d.length; i += 4) { const l = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]; sum += l; n++; if (l < mn) mn = l; if (l > mx) mx = l; }
+  const mean = sum / n;
+  p.br = Math.round(clamp(135 / Math.max(mean, 1) * 100, 85, 130));
+  p.ct = Math.round(clamp(255 / Math.max(mx - mn, 60) * 100, 100, 125));
+  p.sat = 108; p.sharp = Math.max(p.sharp, 25); syncAdjUI(); refresh(); toast('फोटो ' + (active + 1) + ' पर ऑटो सुधार ✓');
+}
+
+/* ---------- शीट सेटिंग्स ---------- */
+function setSel(k, v) { S[k] = v; if (k === 'paper' || k === 'orient') pvPage = 0; syncUI(); refresh(); }
+function setNum(k, v) { S[k] = v; syncUI(); refresh(); }
+function setText(k, v) { S[k] = v; refresh(); }
+function setDpi(v) { S.dpi = +v; persist(); }
+function syncCopies(keepInput) {
+  const p = cur();
+  if (!keepInput) $('pcnt').value = p ? p.copies : '';
+  $('pcnt').disabled = !p;
+  $('pWho').textContent = p ? 'फोटो ' + (active + 1) + ' / ' + photos.length : 'पहले फोटो जोड़ें';
+  $('totalInfo').innerHTML = photos.length
+    ? 'कुल <b>' + totalCopies() + ' फोटो</b> · ' + photos.map((q, i) => 'फोटो ' + (i + 1) + ': ' + q.copies).join(' + ')
+    : 'कुल <b>' + S.N + '</b> खाली जगह (फोटो जोड़ने पर हर फोटो की ' + S.N + ' कॉपी बनेंगी)';
+}
+function setAllCopies(n) { S.N = clamp(n, 1, 100); photos.forEach(p => p.copies = S.N); $('cnt').value = S.N; renderStrip(); refresh(); }
+function chg(d) { setAllCopies(S.N + d); }
+function setCnt() { const v = parseInt($('cnt').value); if (!isNaN(v)) setAllCopies(v); }
+$('cnt').addEventListener('blur', () => { $('cnt').value = S.N; });
+function chgCopies(d) {
+  const p = cur(); if (!p) { toast('पहले फोटो जोड़ें'); return; }
+  p.copies = clamp(p.copies + d, 1, 100); renderStrip(); refresh();
+}
+function setPCnt() {
+  const p = cur(), v = parseInt($('pcnt').value); if (!p || isNaN(v)) return;
+  p.copies = clamp(v, 1, 100); renderStrip(); syncCopies(true); refresh();
+}
+$('pcnt').addEventListener('blur', () => syncCopies());
+function autoFill() {
+  if (S.oneLine) { toast('"एक लाइन" ऑन है — उसे बंद करके Auto भरें'); return; }
+  const per = getLayout(1000, { noOne: true }).perPage, n = Math.max(1, photos.length), base = Math.floor(per / n), rem = per % n;
+  if (!photos.length) S.N = clamp(per, 1, 100);
+  else {
+    if (base < 1) { toast('एक पेज पर सभी फोटो की 1-1 कॉपी भी नहीं आती — दूसरा पेज बनेगा'); photos.forEach(p => p.copies = 1); }
+    else photos.forEach((p, i) => p.copies = clamp(base + (i < rem ? 1 : 0), 1, 100));
+    S.N = clamp(Math.max(1, base), 1, 100);
+  }
+  syncUI(); renderStrip(); refresh(); toast('एक पेज भर गया: कुल ' + totalCopies() + ' फोटो ✓');
+}
+function tog(k) {
+  S[k] = !S[k];
+  if (k === 'marginSplit' && S[k]) S.mL = S.mR = S.mT = S.mB = S.margin;
+  if (k === 'gapSplit' && S[k]) S.gapX = S.gapY = S.gap;
+  syncUI(); refresh();
+}
+function eqMargins() { S.mR = S.mT = S.mB = S.mL; syncUI(); refresh(); toast('चारों मार्जिन ' + S.mL + ' mm'); }
+function setBorderColor(v) { S.borderColor = v; refresh(); }
+function resetExtras() {
+  Object.assign(S, { marginSplit: false, gapSplit: false, cut: false, newRow: false, nums: false, ribbon: false, borderCustom: false, borderW: 0.25, borderColor: '#222222' });
+  syncUI(); refresh(); toast('एक्स्ट्रा रीसेट ✓');
+}
+function todayDate() { const d = new Date(); S.date = String(d.getDate()).padStart(2, '0') + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + d.getFullYear(); $('rDate').value = S.date; refresh(); }
+
+/* ---------- UI ↔ स्टेट सिंक ---------- */
+document.addEventListener('click', e => {
+  const b = e.target.closest('.seg [data-v]'); if (!b) return;
+  const k = b.closest('.seg').dataset.k, v = b.dataset.v;
+  if (k === 'dpi' || k === 'printDpi') { S[k] = +v; persist(); syncUI(); } else setSel(k, v);
+});
+function syncUI() {
+  $('cnt').value = S.N;
+  document.querySelectorAll('.seg[data-k]').forEach(g => {
+    const k = g.dataset.k; g.querySelectorAll('[data-v]').forEach(b => b.classList.toggle('on', String(S[k]) === b.dataset.v));
+  });
+  document.querySelectorAll('input[type=range][data-k]').forEach(r => { const k = r.dataset.k; r.value = S[k]; const l = $('v_' + k); if (l) l.textContent = S[k] + ' mm'; });
+  $('tMSplit').classList.toggle('on', S.marginSplit); $('xbMargin').classList.toggle('hidden', !S.marginSplit);
+  $('tGSplit').classList.toggle('on', S.gapSplit); $('xbGap').classList.toggle('hidden', !S.gapSplit);
+  $('tBCustom').classList.toggle('on', S.borderCustom); $('xbBorder').classList.toggle('hidden', !S.borderCustom); $('borderPick').value = S.borderColor;
+  $('tRibbon').classList.toggle('on', S.ribbon); $('xbRibbon').classList.toggle('hidden', !S.ribbon);
+  $('fMargin').classList.toggle('hidden', S.marginSplit); $('fGap').classList.toggle('hidden', S.gapSplit);
+  $('splitHint').classList.toggle('hidden', !(S.marginSplit || S.gapSplit));
+  $('tabbar').querySelector('[data-t=extras]').classList.toggle('hasdot', S.marginSplit || S.gapSplit || S.cut || S.borderCustom || S.newRow || S.nums || S.ribbon);
+  $('tBorder').classList.toggle('on', S.border); $('tCut').classList.toggle('on', S.cut);
+  $('tOne').classList.toggle('on', S.oneLine); $('tFill').classList.toggle('on', S.fill);
+  $('guideBtn').classList.toggle('on', S.guide);
+  syncAdjUI(); syncCopies();
+  $('tNewRow').classList.toggle('on', S.newRow); $('tNums').classList.toggle('on', S.nums);
+  $('rName').value = S.name; $('rDate').value = S.date;
+  document.querySelectorAll('#swatches .swatch').forEach(s => s.classList.toggle('active', s.dataset.c.toLowerCase() === S.bg.toLowerCase()));
+  $('bgPick').value = S.bg;
+  const idx = SIZES.findIndex(s => s.w === S.W && s.h === S.H);
+  document.querySelectorAll('#sizeGrid .size-card').forEach((c, i) => c.classList.toggle('active', i === idx));
+  const cc = $('customCard');
+  if (cc && idx < 0) { cc.classList.add('active'); cc.innerHTML = '<span class="glyph"><i style="aspect-ratio:' + S.W + '/' + S.H + '"></i></span>कस्टम<span class="dim">' + S.W + '×' + S.H + ' mm</span>'; }
+  else if (cc) { cc.classList.remove('active'); cc.innerHTML = '<span class="glyph"><svg class="ic"><use href="#i-plus"/></svg></span>कस्टम<span class="dim">खुद सेट करें</span>'; }
+  syncEditor();
+}
+
+/* ---------- नेविगेशन (नीचे के टैब / ड्रॉअर) ---------- */
+function togglePanel(force) {
+  const sh = $('shell'), hide = force === undefined ? !sh.classList.contains('nopanel') : force;
+  sh.classList.toggle('nopanel', hide); $('panelBtn').classList.toggle('on', !hide);
+  store.set('mrphoto_pro_ui', { hidden: hide }); setTimeout(refresh, 60);
+}
+function openTab(name) {
+  if ($('shell').classList.contains('nopanel')) togglePanel(false);
+  const panel = $('panel'), mobile = window.matchMedia('(max-width:899px)').matches;
+  if (panel.dataset.tab === name && mobile) panel.classList.toggle('collapsed'); else panel.classList.remove('collapsed');
+  panel.dataset.tab = name;
+  document.querySelectorAll('.tabc').forEach(t => t.classList.toggle('on', t.id === 'tab-' + name));
+  document.querySelectorAll('#tabbar [data-t]').forEach(b => b.classList.toggle('on', b.dataset.t === name));
+  $('panelBody').scrollTop = 0;
+  if (name === 'presets') renderPList();
+  if (name === 'size') renderCustoms();
+  setTimeout(refresh, 260);
+}
+
+/* ---------- प्रीसेट / टेम्पलेट ---------- */
+const PKEYS = ['W', 'H', 'N', 'paper', 'orient', 'margin', 'gap', 'border', 'fill', 'oneLine', 'cut', 'newRow', 'bg', 'dpi', 'marginSplit', 'mL', 'mR', 'mT', 'mB', 'gapSplit', 'gapX', 'gapY', 'borderCustom', 'borderW', 'borderColor'];
+function userPresets() {
+  let u = store.get('mrphoto_pro_presets', null);
+  if (u === null) { // पुराने वर्ज़न से माइग्रेशन
+    u = [];
+    (store.get('mr_presets', []) || []).forEach(p => u.push({ name: p.name, W: p.width, H: p.height, N: p.copies, paper: p.paper, border: !!p.border, fill: !!p.fill, oneLine: !!p.oneLine }));
+    (store.get('mrphoto_templates', []) || []).forEach(t => u.push({ name: t.name, W: t.width, H: t.height, N: t.copies, paper: t.paper, border: t.border !== false, bg: t.bg,
+      br: t.filters && +t.filters.brightness, ct: t.filters && +t.filters.contrast, sat: t.filters && +t.filters.saturate }));
+    store.set('mrphoto_pro_presets', u);
+  }
+  return u;
+}
+const allPresets = () => DEF_PRESETS.concat(userPresets());
+function applyConfig(c) {
+  PKEYS.forEach(k => { if (c[k] !== undefined && c[k] !== null && !(typeof c[k] === 'number' && isNaN(c[k]))) S[k] = c[k]; });
+  sanitize(); if (c.N !== undefined) photos.forEach(p => p.copies = S.N); // टेम्पलेट की कॉपी = हर फोटो की कॉपी
+  pvPage = 0; syncUI(); renderStrip(); refresh();
+}
+function applyPreset(i) { const p = allPresets()[i]; if (!p) return; applyConfig(p); $('cW').value = S.W; $('cH').value = S.H; showCap(); toast('"' + p.name + '" लागू ✓'); }
+function renderPresets() {
+  $('presetScroll').innerHTML = allPresets().map((p, i) =>
+    '<div class="pc" onclick="applyPreset(' + i + ')">' + esc(p.name) + '<small>' + p.W + '×' + p.H + ' • ' + p.N + ' कॉपी</small></div>').join('');
+}
+function renderPList() {
+  const u0 = DEF_PRESETS.length, list = allPresets();
+  $('presetList').innerHTML = list.map((p, i) =>
+    '<div class="preset-item"><div><strong>' + esc(p.name) + '</strong><br><small>' + p.W + '×' + p.H + ' mm • ' + p.N + ' कॉपी • ' + (p.paper || 'A4') + (i >= u0 ? ' • मेरा' : '') + '</small></div>' +
+    '<div style="display:flex;gap:6px"><button class="btn btn-primary btn-sm" onclick="applyPreset(' + i + ')">लागू</button>' +
+    (i >= u0 ? '<button class="btn btn-danger btn-sm" onclick="delPreset(' + (i - u0) + ')">✕</button>' : '') + '</div></div>').join('');
+}
+function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function savePreset() {
+  const name = prompt('प्रीसेट का नाम:', 'मेरा ' + S.W + '×' + S.H + ' × ' + S.N);
+  if (!name || !name.trim()) return;
+  const cfg = { name: name.trim() }; PKEYS.forEach(k => cfg[k] = S[k]);
+  const u = userPresets(); u.push(cfg); store.set('mrphoto_pro_presets', u);
+  renderPresets(); renderPList(); toast('"' + cfg.name + '" सेव हो गया ✓');
+}
+function delPreset(i) {
+  const u = userPresets(); if (!u[i]) return; if (!confirm('"' + u[i].name + '" डिलीट करें?')) return;
+  u.splice(i, 1); store.set('mrphoto_pro_presets', u); renderPresets(); renderPList();
+}
+function clearPresets() {
+  if (!userPresets().length) { toast('कोई सेव्ड प्रीसेट नहीं है'); return; }
+  if (!confirm('सभी सेव्ड प्रीसेट डिलीट करें?')) return;
+  store.set('mrphoto_pro_presets', []); renderPresets(); renderPList(); toast('सब डिलीट हो गए');
+}
+
+/* ---------- आउटपुट: पेज इमेज बनाना ---------- */
+const toBlobP = (cv, type, q) => new Promise(r => cv.toBlob(r, type, q));
+function setJpegDpi(u, dpi) { // JFIF header में असली DPI, ताकि किसी भी व्यूअर / प्रिंट ऐप में सही साइज आए
+  if (u[0] === 0xFF && u[1] === 0xD8 && u[2] === 0xFF && u[3] === 0xE0 && u[6] === 0x4A && u[7] === 0x46) {
+    u[13] = 1; u[14] = dpi >> 8; u[15] = dpi & 255; u[16] = dpi >> 8; u[17] = dpi & 255;
+  }
+  return u;
+}
+async function jpegBlob(cv, dpi) { // quality 1.0 = बिना रंग-कम्प्रेशन (4:4:4)
+  const b = await toBlobP(cv, 'image/jpeg', 1); if (!b) throw new Error('JPG नहीं बन पाई');
+  const u = setJpegDpi(new Uint8Array(await b.arrayBuffer()), dpi);
+  return new Blob([u], { type: 'image/jpeg' });
+}
+async function flateRGB(cv) { // पूरी तरह लॉसलेस (Flate) — PDF के लिए
+  const w = cv.width, h = cv.height, c = cv.getContext('2d'), rgb = new Uint8Array(w * h * 3), band = 128;
+  for (let y = 0, n = 0; y < h; y += band, n++) {
+    const rows = Math.min(band, h - y), d = c.getImageData(0, y, w, rows).data; let o = y * w * 3;
+    for (let i = 0; i < d.length; i += 4) { rgb[o++] = d[i]; rgb[o++] = d[i + 1]; rgb[o++] = d[i + 2]; }
+    if (n % 10 === 0) await tick0();
+  }
+  const stream = new Blob([rgb]).stream().pipeThrough(new CompressionStream('deflate'));
+  return new Uint8Array(await new Response(stream).arrayBuffer());
+}
+/* शीट के पेज बनाना — हर फोटो के साथ लाइव प्रीव्यू + प्रतिशत */
+async function buildPages(o) {
+  const PL = plan(), L = PL.L, out = [], fmt = o.fmt; let dpi = o.dpi || S.dpi;
+  for (let pi = 0; pi < PL.pages; pi++) {
+    let st = null;
+    for (;;) {
+      try { st = sheetPrep(pi, dpi, L, PL.slots, true, false); break; }
+      catch (e) {
+        if (dpi <= 150) throw new Error('मेमोरी कम है');
+        dpi = dpi > 600 ? 600 : dpi > 400 ? 400 : dpi > 300 ? 300 : dpi > 200 ? 200 : 150; toast('मेमोरी कम — क्वालिटी ' + dpi + ' DPI पर बन रही है', 3200); await tick0();
+      }
+    }
+    for (let i = 0; i < st.count; i++) {
+      sheetTile(st, i);
+      const pct = 70 * ((pi + (i + 1) / st.count) / PL.pages);
+      progress(o.title, 'फोटो ' + (st.start + i + 1) + ' / ' + PL.slots.length + (PL.pages > 1 ? ' · पेज ' + (pi + 1) + '/' + PL.pages : '') + ' तैयार', pct, o.icon, st.cv);
+      await tick0();
+    }
+    progress(o.title, 'पेज ' + (pi + 1) + ' पूरे रेज़ोल्यूशन में सेव हो रहा है…', 70 + 25 * (pi / PL.pages), o.icon, st.cv);
+    await tick0();
+    const item = { w: st.cv.width, h: st.cv.height, wmm: L.pw0, hmm: L.ph0, dpi: dpi };
+    if (fmt === 'png') { item.blob = await toBlobP(st.cv, 'image/png'); if (!item.blob) throw new Error('इमेज नहीं बन पाई'); }
+    else if (fmt === 'flate') item.flate = await flateRGB(st.cv);
+    else item.blob = await jpegBlob(st.cv, dpi);
+    out.push(item); st.cv.width = st.cv.height = 1;
+  }
+  photos.forEach(p => { p.cache = null; }); // हाई-रेज़ कैश खाली
+  return out;
+}
+function needPhotos() { if (!photos.length) { toast('पहले फोटो जोड़ें!'); return true; } return false; }
+const fname = ext => 'MRPhoto_' + S.W + 'x' + S.H + '_' + totalCopies() + 'pcs' + ext;
+const sheetPx = d => { const L = plan().L, q = d || S.dpi; return (L.pw0 / 25.4 * q) * (L.ph0 / 25.4 * q); };
+const mb = n => (n / 1048576).toFixed(1) + ' MB';
+
+function download(blob, name) {
+  const a = document.createElement('a'), url = URL.createObjectURL(blob);
+  a.href = url; a.download = name; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 4000);
+}
+
+/* ---------- प्रिंट (पूरा रेज़ोल्यूशन, लॉसलेस PNG) ---------- */
+async function doPrint() {
+  if (needPhotos()) return;
+  closeOutput();
+  try {
+    const pd = S.printDpi;
+    progress('प्रिंट के लिए शीट बन रही है…', 'प्रिंटर क्वालिटी: ' + pd + ' DPI (लॉसलेस)', 2, '🖨️', null);
+    const pages = await buildPages({ fmt: sheetPx(pd) <= 60e6 ? 'png' : 'jpeg', dpi: pd, title: 'प्रिंट के लिए शीट बन रही है…', icon: '🖨️' });
+    const ps = $('printSheet'); ps.innerHTML = '';
+    const urls = [];
+    pages.forEach(pgx => {
+      const u = URL.createObjectURL(pgx.blob); urls.push(u);
+      const d = document.createElement('div'); d.className = 'pg'; d.style.width = pgx.wmm + 'mm'; d.style.height = (pgx.hmm - 0.4) + 'mm';
+      const im = document.createElement('img'); im.src = u; d.appendChild(im); ps.appendChild(d);
+    });
+    let st = $('pageStyle'); if (!st) { st = document.createElement('style'); st.id = 'pageStyle'; document.head.appendChild(st); }
+    st.textContent = '@page{size:' + pages[0].wmm + 'mm ' + pages[0].hmm + 'mm;margin:0}';
+    progress('शीट तैयार ✓', 'प्रिंट डायलॉग खुल रहा है — वहाँ अपना प्रिंटर चुनकर Print दबाएं', 98, '🖨️');
+    await Promise.all(Array.from(ps.querySelectorAll('img')).map(im => im.decode ? im.decode().catch(() => {}) : Promise.resolve()));
+    await new Promise(r => setTimeout(r, 700)); hideProgress();
+    let cleaned = false;
+    const cleanup = () => { if (cleaned) return; cleaned = true; ps.innerHTML = ''; urls.forEach(u => URL.revokeObjectURL(u)); window.removeEventListener('afterprint', onAfter); };
+    const onAfter = () => { toast('प्रिंट डायलॉग बंद हुआ — प्रिंट भेजा था तो प्रिंटर की क्यू में देखें', 4200); setTimeout(cleanup, 4000); };
+    window.addEventListener('afterprint', onAfter);
+    setTimeout(cleanup, 600000);
+    setTimeout(() => window.print(), 100);
+  } catch (e) { hideProgress(); toast('प्रिंट तैयार नहीं हो पाया: ' + e.message, 3500); }
+}
+
+/* ---------- PDF (अपना PDF राइटर — लॉसलेस या JPEG) ---------- */
+async function makePDF(pages) {
+  const enc = new TextEncoder(), parts = [], offs = []; let off = 0;
+  const push = b => { if (typeof b === 'string') b = enc.encode(b); parts.push(b); off += b.length; };
+  const obj = (id, head, stream) => {
+    offs[id] = off; push(id + ' 0 obj\n' + head + '\n');
+    if (stream) { push('stream\n'); push(stream); push('\nendstream\n'); }
+    push('endobj\n');
+  };
+  const n = pages.length, total = 2 + 3 * n;
+  push(new Uint8Array([37, 80, 68, 70, 45, 49, 46, 52, 10, 37, 226, 227, 207, 211, 10]));
+  obj(1, '<< /Type /Catalog /Pages 2 0 R >>');
+  obj(2, '<< /Type /Pages /Kids [' + pages.map((_, i) => (3 + 3 * i) + ' 0 R').join(' ') + '] /Count ' + n + ' >>');
+  for (let i = 0; i < n; i++) {
+    const pgx = pages[i], pid = 3 + 3 * i, cid = pid + 1, iid = pid + 2;
+    const wpt = (pgx.wmm * 72 / 25.4).toFixed(2), hpt = (pgx.hmm * 72 / 25.4).toFixed(2);
+    const bytes = pgx.flate ? pgx.flate : new Uint8Array(await pgx.blob.arrayBuffer()), filt = pgx.flate ? '/FlateDecode' : '/DCTDecode';
+    const content = enc.encode('q ' + wpt + ' 0 0 ' + hpt + ' 0 0 cm /Im0 Do Q');
+    obj(pid, '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ' + wpt + ' ' + hpt + '] /Resources << /XObject << /Im0 ' + iid + ' 0 R >> >> /Contents ' + cid + ' 0 R >>');
+    obj(cid, '<< /Length ' + content.length + ' >>', content);
+    obj(iid, '<< /Type /XObject /Subtype /Image /Width ' + pgx.w + ' /Height ' + pgx.h + ' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter ' + filt + ' /Length ' + bytes.length + ' >>', bytes);
+  }
+  const xo = off; let x = 'xref\n0 ' + (total + 1) + '\n0000000000 65535 f \n';
+  for (let id = 1; id <= total; id++) x += String(offs[id]).padStart(10, '0') + ' 00000 n \n';
+  push(x + 'trailer\n<< /Size ' + (total + 1) + ' /Root 1 0 R >>\nstartxref\n' + xo + '\n%%EOF');
+  return new Blob(parts, { type: 'application/pdf' });
+}
+async function doPDF() {
+  if (needPhotos()) return;
+  closeOutput();
+  try {
+    const lossless = S.pdfMode === 'lossless' && typeof CompressionStream !== 'undefined' && sheetPx() <= 40e6;
+    if (S.pdfMode === 'lossless' && !lossless) toast('इतनी बड़ी शीट के लिए JPEG-PDF (क्वालिटी 100%) बन रही है', 3200);
+    progress('PDF के लिए शीट बन रही है…', S.dpi + ' DPI • ' + (lossless ? 'लॉसलेस' : 'JPEG 100%'), 2, '📄', null);
+    const pages = await buildPages({ fmt: lossless ? 'flate' : 'jpeg', title: 'PDF के लिए शीट बन रही है…', icon: '📄' });
+    progress('PDF लिखी जा रही है…', 'लगभग तैयार', 97, '⏳'); await tick0();
+    const blob = await makePDF(pages);
+    download(blob, fname('.pdf'));
+    progress('PDF सेव हो गई!', fname('.pdf') + ' · ' + mb(blob.size), 100, '✅'); setTimeout(hideProgress, 1800);
+  } catch (e) { hideProgress(); toast('PDF नहीं बन पाई: ' + e.message, 3500); }
+}
+
+/* ---------- PDF खोलकर प्रिंट: प्रिंटर की अपनी क्वालिटी सेटिंग के साथ ---------- */
+async function doPrintPDF() {
+  if (needPhotos()) return;
+  const win = window.open('', '_blank'); // क्लिक के साथ ही खोलते हैं ताकि पॉप-अप ब्लॉकर न रोके
+  if (win) { try { win.document.write('<title>MR Photo</title><body style="font-family:sans-serif;padding:24px;color:#0f1f19">प्रिंट-रेडी PDF बन रही है… कृपया प्रतीक्षा करें</body>'); } catch (_) {} }
+  closeOutput();
+  try {
+    const pd = S.printDpi, lossless = typeof CompressionStream !== 'undefined' && sheetPx(pd) <= 40e6;
+    progress('प्रिंट-रेडी PDF बन रही है…', pd + ' DPI • ' + (lossless ? 'लॉसलेस' : 'JPEG 100%'), 2, '📄', null);
+    const pages = await buildPages({ fmt: lossless ? 'flate' : 'jpeg', dpi: pd, title: 'प्रिंट-रेडी PDF बन रही है…', icon: '📄' });
+    progress('PDF लिखी जा रही है…', 'लगभग तैयार', 97, '⏳'); await tick0();
+    const blob = await makePDF(pages), url = URL.createObjectURL(blob);
+    hideProgress();
+    if (win && !win.closed) { win.location.href = url; toast('PDF खुल गई — वहाँ Print दबाएं, फिर प्रिंटर की Quality / Paper type चुनें', 5500); }
+    else { download(blob, fname('.pdf')); toast('पॉप-अप रुका था — PDF डाउनलोड कर दी, उसे खोलकर प्रिंट करें', 5500); }
+    setTimeout(() => URL.revokeObjectURL(url), 900000);
+  } catch (e) { try { if (win) win.close(); } catch (_) {} hideProgress(); toast('PDF नहीं बन पाई: ' + e.message, 3500); }
+}
+
+/* ---------- JPG / शेयर (quality 1.0, 4:4:4, सही DPI) ---------- */
+async function doJPG() {
+  if (needPhotos()) return;
+  closeOutput();
+  try {
+    progress('JPG के लिए शीट बन रही है…', S.dpi + ' DPI • फुल क्वालिटी', 2, '🖼️', null);
+    const pages = await buildPages({ fmt: 'jpeg', title: 'JPG के लिए शीट बन रही है…', icon: '🖼️' });
+    pages.forEach((pgx, i) => setTimeout(() => download(pgx.blob, fname(pages.length > 1 ? '_p' + (i + 1) + '.jpg' : '.jpg')), i * 400));
+    progress('JPG सेव हो गई!', pages.length + ' फाइल · ' + mb(pages.reduce((a, q) => a + q.blob.size, 0)), 100, '✅'); setTimeout(hideProgress, 1800);
+  } catch (e) { hideProgress(); toast('JPG नहीं बन पाई: ' + e.message, 3500); }
+}
+async function doShare() {
+  if (needPhotos()) return;
+  closeOutput();
+  try {
+    progress('शेयर के लिए शीट बन रही है…', S.dpi + ' DPI • फुल क्वालिटी', 2, '📤', null);
+    const pages = await buildPages({ fmt: 'jpeg', title: 'शेयर के लिए शीट बन रही है…', icon: '📤' });
+    const files = pages.map((pgx, i) => new File([pgx.blob], fname(pages.length > 1 ? '_p' + (i + 1) + '.jpg' : '.jpg'), { type: 'image/jpeg' }));
+    hideProgress();
+    if (navigator.canShare && navigator.canShare({ files: files }) && navigator.share) {
+      try { await navigator.share({ files: files, title: 'MR Photo' }); }
+      catch (e) { if (e && e.name !== 'AbortError') toast('शेयर नहीं हो पाया'); }
+    } else {
+      pages.forEach((pgx, i) => setTimeout(() => download(pgx.blob, files[i].name), i * 400));
+      toast('इस ब्राउज़र में शेयर नहीं है — फाइल डाउनलोड कर दी गई', 3500);
+    }
+  } catch (e) { hideProgress(); toast('शेयर नहीं हो पाया: ' + e.message, 3500); }
+}
+
+/* ---------- PWA: ब्राउज़र खुद Install / Add to Home screen दिखाता है ---------- */
+if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
+
+/* ---------- शुरुआत ---------- */
+window.addEventListener('resize', () => refresh());
+window.addEventListener('orientationchange', () => setTimeout(refresh, 300));
+document.addEventListener('keydown', e => {
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.classList && (e.target.classList.contains('toggle-switch') || e.target.classList.contains('swatch'))) { e.preventDefault(); e.target.click(); }
+});
+buildSizes(); renderPresets(); renderCustoms(); renderStrip(); syncUI(); openTab('photos'); drawAll();
+if ((store.get('mrphoto_pro_ui', {}) || {}).hidden) togglePanel(true);
+if (window.ResizeObserver) new ResizeObserver(() => refresh()).observe($('stage'));
+</script>
+</body>
+</html>

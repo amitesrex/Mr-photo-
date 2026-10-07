@@ -1,0 +1,73 @@
+{
+  "id": "mr-photo-pro",
+  "name": "MR Photo — पासपोर्ट स्टूडियो",
+  "short_name": "MR Photo",
+  "description": "पासपोर्ट फोटो स्टूडियो: क्रॉप, बैकग्राउंड, शीट लेआउट, प्रिंट और PDF",
+  "lang": "hi",
+  "dir": "ltr",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "minimal-ui"
+  ],
+  "orientation": "any",
+  "background_color": "#0f1f19",
+  "theme_color": "#0f1f19",
+  "categories": [
+    "photo",
+    "utilities",
+    "productivity"
+  ],
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "screenshots/narrow.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "फोटो जोड़ें, क्रॉप करें और शीट बनाएं"
+    },
+    {
+      "src": "screenshots/wide.png",
+      "sizes": "1280x800",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "पासपोर्ट फोटो स्टूडियो — कंप्यूटर पर"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "नई शीट",
+      "short_name": "नई शीट",
+      "url": "./index.html",
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}
