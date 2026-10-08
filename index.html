@@ -274,6 +274,25 @@ details.note p{margin-top:8px}
   #printSheet .pg:last-child{page-break-after:auto;break-after:auto}
   #printSheet img{display:block;width:100%;height:100%;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
+
+/* scan / template editor / margins */
+#edCv.ctx{background:#0c1713;box-shadow:none}
+.sclist{display:grid;gap:8px;margin-top:6px}
+.btn.scdev{justify-content:flex-start;text-align:left;background:#fff;box-shadow:inset 0 0 0 1.5px var(--ok);padding:13px}
+.btn.scdev span{flex:1}
+.btn.scdev small{color:var(--ok);font-weight:700;font-size:.68rem}
+select.sel{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radius:11px;font-size:.88rem;background:#fff}
+.mg{display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-areas:". t ." "l m r" ". b .";gap:8px;align-items:center}
+.mg .mc label{font-size:.66rem;color:var(--muted);display:block;margin-bottom:3px;font-weight:600;white-space:nowrap}
+.mg .mc input{margin:0;padding:9px 6px;text-align:center}
+.mg .mT{grid-area:t}.mg .mL{grid-area:l}.mg .mR{grid-area:r}.mg .mB{grid-area:b}
+.mg .mid{grid-area:m;display:grid;place-items:center}
+.mg .mid i{display:block;width:40px;height:52px;background:#fff;border:2px solid var(--ink);border-radius:3px;position:relative}
+.mg .mid i::after{content:"";position:absolute;inset:6px;border:1.5px dashed var(--amber-d)}
+.saved-chip.on{background:var(--ink);color:#fff}
+.tebar{position:sticky;bottom:-1px;background:var(--paper);display:flex;gap:8px;padding:12px 0 2px;margin-top:12px}
+.tebar .btn{flex:1}
+#tplModal .dialog{max-height:94dvh}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -309,6 +328,9 @@ details.note p{margin-top:8px}
 <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 7h4M12 7h8M4 12h9M17 12h3M4 17h2M10 17h10"/><circle cx="10" cy="7" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="8" cy="17" r="2"/></symbol>
 <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13 7l4 4"/></symbol>
 <symbol id="i-fill" viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M4 9h16M9 4v16" /></symbol>
+<symbol id="i-scan" viewBox="0 0 24 24"><path d="M3 14h18v6H3z"/><path d="M5 14l2-8h10l2 8"/><path d="M7 17h.01M11 17h6"/></symbol>
+<symbol id="i-fit" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></symbol>
+<symbol id="i-level" viewBox="0 0 24 24"><path d="M3 12h18M7 8v8M17 8v8"/></symbol>
 </defs></svg>
 
 <div class="shell" id="shell">
@@ -342,6 +364,7 @@ details.note p{margin-top:8px}
         <button class="btn ink" onclick="$('fi').click()"><svg class="ic sm"><use href="#i-plus"/></svg>गैलरी</button>
         <button class="btn" onclick="$('cam').click()"><svg class="ic sm"><use href="#i-camera"/></svg>कैमरा</button>
       </div>
+      <button class="btn block" style="margin-top:8px" onclick="openScan()"><svg class="ic sm"><use href="#i-scan"/></svg>स्कैनर से स्कैन</button>
     </div>
 
     <div class="stage-foot">
@@ -367,6 +390,7 @@ details.note p{margin-top:8px}
           <button class="btn ink" onclick="$('fi').click()"><svg class="ic sm"><use href="#i-plus"/></svg>गैलरी</button>
           <button class="btn" onclick="$('cam').click()"><svg class="ic sm"><use href="#i-camera"/></svg>कैमरा</button>
         </div>
+        <button class="btn block" style="margin-top:8px" onclick="openScan()"><svg class="ic sm"><use href="#i-scan"/></svg>स्कैनर / प्रिंटर से स्कैन</button>
         <div class="rows2" style="margin-top:8px">
           <button class="btn amber" onclick="openCrop()"><svg class="ic sm"><use href="#i-crop"/></svg>क्रॉप स्टूडियो</button>
           <button class="btn danger" onclick="clearPhotos()"><svg class="ic sm"><use href="#i-trash"/></svg>सब हटाएं</button>
@@ -408,6 +432,7 @@ details.note p{margin-top:8px}
             <div><label>ऊँचाई mm</label><input type="number" id="cH" value="45" min="10" max="280" step="0.5" oninput="showCap()"></div>
             <button class="btn amber sm" onclick="applyCustom()">लागू</button>
           </div>
+          <button class="btn line sm block" style="margin-top:8px" onclick="addSizeFromCustom()">+ इस साइज को साइज-लिस्ट में जोड़ें</button>
           <div class="cap" id="capBox"></div>
           <div class="lbl" style="margin:12px 0 0">टेम्पलेट से चुनें (साइज + कॉपी + लेआउट)</div>
           <div class="saved" id="customPresets"></div>
@@ -415,6 +440,8 @@ details.note p{margin-top:8px}
           <div class="saved" id="savedCustom"></div>
           <button class="btn line sm" style="margin-top:10px" onclick="clearCustoms()">सेव्ड साइज हटाएं</button>
         </div>
+        <h3>पेज के किनारे (मार्जिन) <small>साइज बदलते समय यहीं से तय करें</small></h3>
+        <div id="mgSize"></div>
         <div class="cap" id="sizeCap" style="margin-top:12px"></div>
       </div>
 
@@ -536,10 +563,11 @@ details.note p{margin-top:8px}
 
       <!-- ---- प्रीसेट ---- -->
       <div class="tabc" id="tab-presets">
-        <h3>प्रीसेट / टेम्पलेट <small>एक टैप में पूरी सेटिंग</small></h3>
+        <h3>प्रीसेट / टेम्पलेट <small>लागू · ✎ एडिट · ✕ हटाएं</small></h3>
         <div id="presetList"></div>
-        <button class="btn ink block" style="margin-top:6px" onclick="savePreset()"><svg class="ic sm"><use href="#i-save"/></svg>अभी की सेटिंग सेव करें</button>
-        <button class="btn danger block sm" style="margin-top:8px" onclick="clearPresets()">सभी सेव्ड प्रीसेट डिलीट</button>
+        <button class="btn amber block" style="margin-top:6px" onclick="tplEdit(-1)"><svg class="ic sm"><use href="#i-plus"/></svg>नया टेम्पलेट बनाएं</button>
+        <button class="btn ink block" style="margin-top:8px" onclick="savePreset()"><svg class="ic sm"><use href="#i-save"/></svg>अभी की सेटिंग सेव करें</button>
+        <div class="rows2" style="margin-top:8px"><button class="btn line sm" onclick="resetTpls()">⟲ डिफ़ॉल्ट वापस</button><button class="btn danger sm" onclick="clearMyTpls()">मेरे बनाए हटाएं</button></div>
       </div>
     </div>
 
@@ -565,14 +593,19 @@ details.note p{margin-top:8px}
     <div class="ed-wrap" id="edWrap"><canvas id="edCv"></canvas></div>
     <div class="crop-tools">
       <div class="strip" id="edStrip"></div>
+      <p class="hint" style="margin:0 0 4px">✌️ <b>दो उंगलियां:</b> खिसकाएं = मूव · फैलाएं / सिकोड़ें = ज़ूम · घुमाएं (ट्विस्ट) = रोटेट। एक उंगली से फोटो खिसकाएं।</p>
       <div class="lbl" style="margin-top:4px">ज़ूम <b id="vZoom">100%</b></div>
       <div class="zoomrow">
         <button onclick="zoomStep(-0.1)" aria-label="ज़ूम कम"><svg class="ic sm"><use href="#i-minus"/></svg></button>
-        <input type="range" id="edZoom" min="20" max="500" value="100" oninput="edSet('zoom',this.value/100)">
+        <input type="range" id="edZoom" min="0" max="1000" value="400" oninput="edSet('zoom',s2z(this.value))">
         <button onclick="zoomStep(0.1)" aria-label="ज़ूम ज्यादा"><svg class="ic sm"><use href="#i-plus"/></svg></button>
       </div>
       <div class="lbl" style="margin-top:6px">टेढ़ी फोटो सीधी करें <b id="vFine">0°</b></div>
-      <input type="range" id="edFine" min="-15" max="15" step="0.5" value="0" oninput="edSet('fine',+this.value)">
+      <div class="zoomrow">
+        <button onclick="nudgeFine(-0.5)" aria-label="0.5 डिग्री बाएं"><svg class="ic sm"><use href="#i-rotl"/></svg></button>
+        <input type="range" id="edFine" min="-45" max="45" step="0.1" value="0" oninput="edSet('fine',+this.value)">
+        <button onclick="nudgeFine(0.5)" aria-label="0.5 डिग्री दाएं"><svg class="ic sm"><use href="#i-rotr"/></svg></button>
+      </div>
       <div class="tools">
         <button class="tool" onclick="rotate(-1)"><svg class="ic"><use href="#i-rotl"/></svg>बाएं घुमाएं</button>
         <button class="tool" onclick="rotate(1)"><svg class="ic"><use href="#i-rotr"/></svg>दाएं घुमाएं</button>
@@ -581,9 +614,15 @@ details.note p{margin-top:8px}
         <button class="tool" onclick="autoFace()"><svg class="ic"><use href="#i-face"/></svg>ऑटो चेहरा</button>
         <button class="tool on" id="guideBtn" onclick="tog('guide')"><svg class="ic"><use href="#i-photos"/></svg>गाइड</button>
         <button class="tool" onclick="applyToAll()"><svg class="ic"><use href="#i-copyall"/></svg>सब पर लागू</button>
+        <button class="tool" onclick="fitWhole()"><svg class="ic"><use href="#i-fit"/></svg>पूरी फोटो</button>
+        <button class="tool" onclick="levelPhoto()"><svg class="ic"><use href="#i-level"/></svg>सीधा (0°)</button>
         <button class="tool" onclick="removePhoto(active)"><svg class="ic"><use href="#i-trash"/></svg>फोटो हटाएं</button>
       </div>
       <div class="sw-row" style="margin-top:8px">
+        <div><b>फ्रेम के बाहर का हिस्सा दिखाएं</b><small>पूरा स्कैन / फोटो दिखता है, कटने वाला हिस्सा धुंधला</small></div>
+        <div class="toggle-switch on" id="tCtx" tabindex="0" role="switch" onclick="toggleCtx()"></div>
+      </div>
+      <div class="sw-row">
         <div><b>बैकग्राउंड बदलें</b><small>सादी दीवार / परदे वाली फोटो पर सबसे अच्छा। रंग "रंग" टैब से चुनें।</small></div>
         <div class="toggle-switch" id="tRmBg" tabindex="0" role="switch" onclick="toggleRmBg()"></div>
       </div>
@@ -621,7 +660,11 @@ details.note p{margin-top:8px}
       <button class="otile" onclick="doJPG()"><svg class="ic"><use href="#i-photos"/></svg>JPG सेव<small>फुल क्वालिटी (4:4:4) + सही DPI</small></button>
       <button class="otile" onclick="doShare()"><svg class="ic"><use href="#i-share"/></svg>शेयर<small>WhatsApp / ईमेल पर भेजें</small></button>
       <button class="otile wide" onclick="doPrintPDF()"><svg class="ic"><use href="#i-pdf"/></svg><div>PDF खोलकर प्रिंट करें<br><small>प्रिंटर की अपनी Best / Photo क्वालिटी सेटिंग के साथ — सबसे बढ़िया तरीका</small></div></button>
+      <button class="otile wide" onclick="doUsbPrint()"><svg class="ic"><use href="#i-print"/></svg><div>USB (OTG) प्रिंटर से सीधे प्रिंट<br><small>नया या पुराना — प्रिंटर की भाषा खुद पहचानता है (IPP / PostScript / PCL)</small></div></button>
     </div>
+    <h3>पुराने प्रिंटर की भाषा <small>सिर्फ USB सीधे प्रिंट के लिए</small></h3>
+    <select id="uspLang" class="sel"><option value="auto">अपने-आप पहचानो (सही)</option><option value="pcl">PCL — पुराने HP / लेज़र (काला-सफ़ेद)</option><option value="ps">PostScript — रंगीन लेज़र / पेशेवर</option></select>
+    <p class="hint">पुराने प्रिंटर में पेपर साइज A4 / A3 / A5 / Letter / Legal ही चलेगा। PCL में किनारे का ~4 mm प्रिंटर खुद काटता है, इसलिए शीट में 5 mm मार्जिन रखें।</p>
     <div class="note"><svg class="ic sm" style="margin-top:2px"><use href="#i-print"/></svg><div>प्रिंट डायलॉग में <b>Scale: 100% / Actual size</b> और <b>Margins: None</b> चुनें, तभी फोटो का साइज बिल्कुल सही आएगा।</div></div>
     <details class="note"><summary><svg class="ic sm"><use href="#i-print"/></svg>प्रिंटर की बेस्ट क्वालिटी कैसे चुनें?</summary>
       <p><b>1. प्रिंट डायलॉग में:</b> Scale = 100% / Actual size, Margins = None, "Background graphics" चालू (अगर दिखे)।</p>
@@ -630,6 +673,132 @@ details.note p{margin-top:8px}
       <p><b>4. सबसे बढ़िया:</b> ऊपर वाला "PDF खोलकर प्रिंट" — PDF व्यूअर प्रिंटर ड्राइवर की अपनी पाइपलाइन से छापता है, इसलिए Quality / Paper type वहीं मिलते हैं।</p>
       <p>प्रिंट दबाते ही आपके डिवाइस का प्रिंट डायलॉग खुलता है, जिसमें पहले से जुड़े सारे प्रिंटर (WiFi / USB / Bluetooth) दिखते हैं। सुरक्षा कारण से कोई वेब पेज प्रिंटर की सूची या ड्राइवर की Quality / Paper type सेटिंग खुद नहीं बदल सकता, और छपाई की असली प्रगति प्रिंटर की क्यू में दिखती है। कंप्यूटर पर बिना डायलॉग सीधा प्रिंट: Chrome को <b>--kiosk-printing</b> के साथ चलाएं।</p>
     </details>
+  </div>
+</div>
+
+<!-- ============ SCAN ============ -->
+<div class="modal out hidden" id="scanModal" role="dialog" aria-label="स्कैन">
+  <div class="backdrop" onclick="closeScan()"></div>
+  <div class="dialog">
+    <div class="grip" style="height:14px;display:grid"></div>
+    <div class="dialog-head"><h2>स्कैनर से स्कैन</h2><button class="icon-btn" style="background:var(--soft);color:var(--ink)" onclick="closeScan()" aria-label="बंद करें"><svg class="ic"><use href="#i-close"/></svg></button></div>
+
+    <div id="scHome">
+      <h3>🔌 USB (OTG) प्रिंटर</h3>
+      <button class="btn amber block hidden" id="scPendBtn" style="margin-bottom:10px" onclick="scBatchDone()"></button>
+      <div id="scUsbList" class="sclist"></div>
+      <button class="btn amber block" id="scUsbBtn" style="margin-top:8px" onclick="scUsbPick()"><svg class="ic sm"><use href="#i-scan"/></svg>USB प्रिंटर खोजें / जोड़ें</button>
+      <p class="hint" id="scUsbMsg"></p>
+
+      <h3 style="margin-top:16px">📶 WiFi प्रिंटर</h3>
+      <div class="note" style="flex-direction:column;gap:6px;margin-top:6px">
+        <div>ब्राउज़र सुरक्षा के कारण WiFi प्रिंटर से सीधे बात नहीं कर सकता (न उसे खुद खोज सकता है)। बिना कंप्यूटर यह तरीका चलता है:</div>
+        <div>1. फोन में <b>Mopria Scan</b> (या HP Smart / Canon PRINT / Epson Smart Panel) खोलें — यह WiFi प्रिंटर अपने-आप ढूंढ लेती है।<br>2. स्कैन करके <b>Share → MR Photo</b> दबाएं।</div>
+      </div>
+      <button class="btn block" style="margin-top:8px" onclick="closeScan();$('fi').click()">स्कैन की हुई फाइल चुनें</button>
+
+      <button class="btn block" id="scBridgeBtn" style="margin-top:14px" onclick="scProbe()">💻 कंप्यूटर के स्कैनर से (Windows Bridge)</button>
+    </div>
+
+    <div id="scWait" class="note"><span id="scWaitMsg">खोज रहा हूँ…</span></div>
+
+    <div id="scOff" class="hidden">
+      <div class="note" style="flex-direction:column;gap:6px">
+        <b style="color:var(--ink)">कंप्यूटर पर "MR Scanner Bridge" चालू नहीं मिला</b>
+        <div>1. ज़िप के <b>scanner-bridge</b> फोल्डर में <b>Start-Scanner.bat</b> पर डबल क्लिक करें (काली विंडो खुली रहे)।<br>2. स्कैनर / प्रिंटर चालू और कंप्यूटर से जुड़ा हो।<br>3. नीचे "फिर से खोजें" दबाएं।</div>
+      </div>
+      <button class="btn amber block" style="margin-top:10px" onclick="scProbe()">फिर से खोजें</button>
+      <button class="btn block" style="margin-top:8px" onclick="scShow('scHome');scHomeRefresh()">← वापस</button>
+    </div>
+
+    <div id="scPair" class="hidden">
+      <div class="note" id="scPairMsg"></div>
+      <input type="text" id="scCode" inputmode="numeric" maxlength="8" placeholder="6 अंकों का कोड" style="margin-top:10px">
+      <button class="btn amber block" onclick="scPairGo()">जोड़ें</button>
+      <button class="btn block" style="margin-top:8px" onclick="scShow('scHome');scHomeRefresh()">← वापस</button>
+    </div>
+
+    <div id="scReady" class="hidden">
+      <div class="warn hidden" id="scMock" style="margin-top:8px">टेस्ट मोड — असली स्कैनर नहीं, नमूना फोटो आएगी</div>
+      <div class="note" style="margin-top:8px"><b id="scWho" style="color:var(--ink)"></b></div>
+      <div id="scDevWrap"><h3>स्कैनर</h3>
+      <select id="scDev" class="sel" onchange="scDevPick(this.value)"></select></div>
+      <h3>स्कैन मोड</h3>
+      <div class="seg fit" data-sc="multi"><button class="chip" data-v="0">एक स्कैन</button><button class="chip" data-v="1">कई स्कैन (लगातार)</button></div>
+      <div id="scBatch" class="hidden note" style="flex-direction:column;gap:8px">
+        <b style="color:var(--ink)" id="scBatchTitle"></b>
+        <div id="scBatchThumbs" style="display:flex;gap:6px;overflow-x:auto"></div>
+        <div style="display:flex;gap:8px"><button class="btn" style="flex:1" onclick="scBatchUndo()">आख़िरी हटाएं</button><button class="btn amber" style="flex:2" onclick="scBatchDone()">✓ हो गया — फोटो जोड़ें</button></div>
+      </div>
+      <h3>ऑटो पहचान</h3>
+      <div class="seg fit" data-sc="auto"><button class="chip" data-v="1">फोटो अलग + सीधी</button><button class="chip" data-v="0">बंद</button></div>
+      <p class="hint">एक पन्ने पर कई फोटो रखें (बीच में थोड़ी जगह छोड़कर) — ऐप हर फोटो को अलग काटकर सीधा कर देगी। सफ़ेद बैकग्राउंड वाली फोटो ठीक न कटे तो "बंद" करके क्रॉप स्टूडियो में काटें।</p>
+      <h3>क्वालिटी (DPI)</h3>
+      <div class="seg fit" data-sc="dpi"><button class="chip" data-v="150">150</button><button class="chip" data-v="300">300</button><button class="chip" data-v="600">600</button></div>
+      <h3>रंग</h3>
+      <div class="seg fit" data-sc="color"><button class="chip" data-v="1">रंगीन</button><button class="chip" data-v="2">ग्रे</button></div>
+      <h3>स्कैन एरिया</h3>
+      <div class="seg fit" data-sc="area"><button class="chip" data-v="A4">A4</button><button class="chip" data-v="A5">A5</button><button class="chip" data-v="4x6">4×6″</button><button class="chip" data-v="full">पूरा बेड</button></div>
+      <button class="btn amber block" id="scGo" style="margin-top:14px;padding:14px" onclick="doScan()"><svg class="ic sm"><use href="#i-scan"/></svg>स्कैन शुरू करें</button>
+      <p class="hint">स्कैन होते ही फोटो क्रॉप स्टूडियो में खुलेगी — दो उंगलियों से घुमाकर / ज़ूम करके क्रॉप करें।</p>
+      <button class="btn block" style="margin-top:8px" onclick="scShow('scHome');scHomeRefresh()">← वापस</button>
+    </div>
+
+    <details class="note"><summary>📱 फोन से स्कैन कैसे करें?</summary>
+      <p>प्रिंटर की अपनी ऐप (HP Smart / Canon PRINT / Epson Smart Panel) से स्कैन करें → स्कैन की फोटो पर <b>Share</b> दबाएं → <b>MR Photo</b> चुनें। फोटो सीधे क्रॉप स्टूडियो में खुलेगी। (इसके लिए MR Photo फोन में Install की हुई होनी चाहिए — Android Chrome।)</p>
+      <p>या ऐप में स्कैन सेव करके यहाँ "गैलरी" से चुन लें।</p>
+    </details>
+  </div>
+</div>
+
+<!-- ============ TEMPLATE EDITOR ============ -->
+<div class="modal out hidden" id="tplModal" role="dialog" aria-label="टेम्पलेट एडिट">
+  <div class="backdrop"></div>
+  <div class="dialog">
+    <div class="grip" style="height:14px;display:grid"></div>
+    <div class="dialog-head"><h2 id="teTitle">टेम्पलेट एडिट करें</h2><button class="icon-btn" style="background:var(--soft);color:var(--ink)" onclick="tplCancel()" aria-label="रद्द"><svg class="ic"><use href="#i-close"/></svg></button></div>
+    <input type="text" id="teName" maxlength="28" placeholder="टेम्पलेट का नाम">
+
+    <h3>फोटो साइज (mm) <button class="btn" onclick="tplSwap()">⇄ चौड़ाई↔ऊँचाई</button></h3>
+    <div class="custom-row" style="grid-template-columns:1fr 1fr">
+      <div><label>चौड़ाई mm</label><input type="number" id="teW" inputmode="decimal" min="10" max="280" step="0.5" oninput="tplDim('W',this.value)"></div>
+      <div><label>ऊँचाई mm</label><input type="number" id="teH" inputmode="decimal" min="10" max="280" step="0.5" oninput="tplDim('H',this.value)"></div>
+    </div>
+    <div class="saved" id="teSizes"></div>
+    <button class="btn line sm block" style="margin-top:8px" onclick="tplAddSize()">+ यह साइज साइज-लिस्ट में भी जोड़ें</button>
+
+    <h3>हर फोटो की कॉपी <button class="btn" onclick="tplFill()">एक पेज भरें (Auto)</button></h3>
+    <input type="number" id="teN" inputmode="numeric" min="1" max="100" oninput="tplCopies(this.value)">
+
+    <h3>पेपर</h3>
+    <div class="seg" data-k="paper"><button class="chip" data-v="A4">A4</button><button class="chip" data-v="A5">A5</button><button class="chip" data-v="A6">A6</button><button class="chip" data-v="4x6">4×6″</button><button class="chip" data-v="5x7">5×7″</button><button class="chip" data-v="Letter">Letter</button></div>
+    <div class="seg fit" data-k="orient" style="margin-top:8px"><button class="chip" data-v="port">पोर्ट्रेट (खड़ा)</button><button class="chip" data-v="land">लैंडस्केप (लेटा)</button></div>
+
+    <h3>चारों तरफ मार्जिन (mm)</h3>
+    <div id="mgTpl"></div>
+
+    <h3>फोटो के बीच गैप (mm)</h3>
+    <div class="custom-row" style="grid-template-columns:1fr 1fr">
+      <div><label>आड़ा (बाएं-दाएं)</label><input type="number" id="teGX" inputmode="decimal" min="0" max="30" step="0.5" oninput="setGap('gapX',this.value)"></div>
+      <div><label>खड़ा (ऊपर-नीचे)</label><input type="number" id="teGY" inputmode="decimal" min="0" max="30" step="0.5" oninput="setGap('gapY',this.value)"></div>
+    </div>
+
+    <div class="extra" style="margin-top:12px">
+      <div class="sw-row"><div><b>फोटो पर बॉर्डर</b></div><div class="toggle-switch" id="teBorder" tabindex="0" role="switch" onclick="tog('border')"></div></div>
+      <div class="sw-row"><div><b>साइज में Fill (Crop)</b></div><div class="toggle-switch" id="teFill" tabindex="0" role="switch" onclick="tog('fill')"></div></div>
+      <div class="sw-row"><div><b>सारी फोटो एक ही लाइन में</b></div><div class="toggle-switch" id="teOne" tabindex="0" role="switch" onclick="tog('oneLine')"></div></div>
+      <div class="sw-row"><div><b>कटिंग मार्क</b></div><div class="toggle-switch" id="teCut" tabindex="0" role="switch" onclick="tog('cut')"></div></div>
+    </div>
+
+    <h3>नतीजा <small>पीला = मार्जिन · हरा = फोटो</small></h3>
+    <div style="display:flex;justify-content:center"><canvas id="teMini" width="10" height="10" style="border-radius:3px;box-shadow:0 4px 14px rgba(0,0,0,.25)"></canvas></div>
+    <div class="cap" id="teInfo"></div>
+
+    <div class="tebar">
+      <button class="btn line" onclick="tplCancel()">रद्द</button>
+      <button class="btn line hidden" id="teSaveNew" onclick="tplSave(true)">नया बनाकर सेव</button>
+      <button class="btn amber" onclick="tplSave(false)"><svg class="ic sm"><use href="#i-save"/></svg>सेव</button>
+    </div>
   </div>
 </div>
 
@@ -654,6 +823,7 @@ details.note p{margin-top:8px}
    ========================================================= */
 const $ = id => document.getElementById(id);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const ZMIN = 0.05, ZMAX = 12; // क्रॉप ज़ूम की सीमा
 
 /* ---------- सुरक्षित स्टोरेज ---------- */
 const store = {
@@ -707,8 +877,8 @@ let S = Object.assign({}, DEF_S);
 
 function sanitize() {
   const num = (k, a, b) => { const v = parseFloat(S[k]); S[k] = clamp(isNaN(v) ? DEF_S[k] : v, a, b); };
-  num('W', 5, 280); num('H', 5, 280); num('N', 1, 100); num('margin', 0, 30); num('gap', 0, 20);
-  num('mL', 0, 40); num('mR', 0, 40); num('mT', 0, 40); num('mB', 0, 40); num('gapX', 0, 30); num('gapY', 0, 30); num('borderW', 0.1, 1.5);
+  num('W', 5, 280); num('H', 5, 280); num('N', 1, 100); num('margin', 0, 60); num('gap', 0, 20);
+  num('mL', 0, 60); num('mR', 0, 60); num('mT', 0, 60); num('mB', 0, 60); num('gapX', 0, 30); num('gapY', 0, 30); num('borderW', 0.1, 1.5);
   S.N = Math.round(S.N);
   if (!PAPERS[S.paper]) S.paper = 'A4';
   if (!['port', 'land'].includes(S.orient)) S.orient = 'port'; // पुराना 'auto' भी पोर्ट्रेट बन जाएगा
@@ -747,9 +917,10 @@ function hideProgress() { $('ov').classList.add('hidden'); $('pPrev').classList.
 const tick0 = () => new Promise(r => setTimeout(r, 0));
 const tick = () => new Promise(r => setTimeout(r, 30));
 
-function addPhotos(e) {
-  const files = Array.from(e.target.files || []).filter(f => /^image\//.test(f.type) || /\.(jpe?g|png|webp|heic|heif|bmp|gif)$/i.test(f.name));
-  e.target.value = '';
+function addPhotos(e) { const list = Array.from(e.target.files || []); e.target.value = ''; addPhotoFiles(list); }
+function addPhotoFiles(list, opt) {
+  opt = opt || {};
+  const files = Array.from(list || []).filter(f => /^image\//.test(f.type) || /\.(jpe?g|png|webp|heic|heif|bmp|gif)$/i.test(f.name));
   if (!files.length) { toast('कोई फोटो नहीं चुनी गई'); return; }
   let done = 0, added = 0;
   files.forEach(f => {
@@ -758,7 +929,7 @@ function addPhotos(e) {
     img.onload = () => {
       photos.push({ id: Date.now() + Math.random(), url, img, w: img.naturalWidth, h: img.naturalHeight, name: f.name,
         zoom: 1, ox: 0, oy: 0, rot: 0, fine: 0, flip: false, rmBg: false, tol: 40, cache: null,
-        copies: S.N, br: 100, ct: 100, sat: 100, sharp: 0 });
+        copies: S.N, br: 100, ct: 100, sat: 100, sharp: 0, fit: !!opt.scan });
       added++; fin();
     };
     img.onerror = () => { URL.revokeObjectURL(url); toast('"' + f.name + '" खुल नहीं पाई (फॉर्मेट सपोर्ट नहीं)'); fin(); };
@@ -766,7 +937,7 @@ function addPhotos(e) {
   });
   function fin() {
     if (++done < files.length) return;
-    if (added) { active = photos.length - 1; renderStrip(); syncEditor(); refresh(); toast(added + ' फोटो जुड़ गई ✓'); }
+    if (added) { active = opt.first ? photos.length - added : photos.length - 1; renderStrip(); syncEditor(); refresh(); toast(added + ' फोटो जुड़ गई ✓'); if (opt.openCrop) openCrop(); }
   }
 }
 function removePhoto(i) {
@@ -902,20 +1073,23 @@ function needMd(p, w, h) { // इस टाइल में 1:1 क्वाल�
   const s0 = S.fill ? Math.max(w / rw, h / rh) : Math.min(w / rw, h / rh);
   return Math.max(p.w, p.h) * s0 * p.zoom;
 }
+function paintPhoto(c, p, x, y, w, h, cap) { // बिना क्लिप के फोटो बनाना (एडिटर में फ्रेम के बाहर भी दिखाने के लिए)
+  const src = getProc(p, clamp(needMd(p, w, h) * 1.3, 300, cap));
+  const sw = src.width || src.naturalWidth, sh = src.height || src.naturalHeight, r = ((p.rot % 4) + 4) % 4;
+  const rw = r % 2 ? sh : sw, rh = r % 2 ? sw : sh;
+  const s0 = S.fill ? Math.max(w / rw, h / rh) : Math.min(w / rw, h / rh), sc = s0 * p.zoom;
+  c.save();
+  c.translate(x + w / 2 + p.ox * w, y + h / 2 + p.oy * h);
+  c.rotate(r * Math.PI / 2 + p.fine * Math.PI / 180);
+  c.scale(p.flip ? -sc : sc, sc);
+  c.imageSmoothingEnabled = true; c.imageSmoothingQuality = 'high';
+  c.drawImage(src, -sw / 2, -sh / 2);
+  c.restore();
+}
 function drawPhotoInto(c, p, x, y, w, h, cap) {
   c.save(); c.beginPath(); c.rect(x, y, w, h); c.clip();
   c.fillStyle = S.bg; c.fillRect(x, y, w, h);
-  if (p) {
-    const src = getProc(p, clamp(needMd(p, w, h) * 1.3, 300, cap));
-    const sw = src.width || src.naturalWidth, sh = src.height || src.naturalHeight, r = ((p.rot % 4) + 4) % 4;
-    const rw = r % 2 ? sh : sw, rh = r % 2 ? sw : sh;
-    const s0 = S.fill ? Math.max(w / rw, h / rh) : Math.min(w / rw, h / rh), s = s0 * p.zoom;
-    c.translate(x + w / 2 + p.ox * w, y + h / 2 + p.oy * h);
-    c.rotate(r * Math.PI / 2 + p.fine * Math.PI / 180);
-    c.scale(p.flip ? -s : s, s);
-    c.imageSmoothingEnabled = true; c.imageSmoothingQuality = 'high';
-    c.drawImage(src, -sw / 2, -sh / 2);
-  }
+  if (p) paintPhoto(c, p, x, y, w, h, cap);
   c.restore();
 }
 
@@ -1066,41 +1240,91 @@ function drawAll() {
   if (L.one && L.pw < S.W * 0.6) warns.push('एक लाइन में बहुत ज्यादा फोटो हैं, काफी छोटी हो गईं');
   if (S.cut && L.g < 2) warns.push('कटिंग मार्क के लिए गैप 2 mm या ज्यादा रखें');
   $('warnBox').classList.toggle('hidden', !warns.length); $('warnBox').textContent = warns.join(' • ');
-  $('sizeCap').innerHTML = '<b>' + S.paper + '</b> पर ' + S.W + '×' + S.H + ' mm की <b>' + capacity(S.W, S.H, S.paper).perPage + ' फोटो</b> एक पेज पर आती हैं';
+  fitInfoUpdate();
   syncCopies(true);
 }
 function pg(d) { pvPage = clamp(pvPage + d, 0, plan().pages - 1); drawAll(); }
 
 /* ---------- क्रॉप एडिटर ---------- */
-function sizeEditor() {
-  const cv = $('edCv'), wrap = $('edWrap');
-  const aw = Math.max(100, wrap.clientWidth - 24), ah = Math.max(100, wrap.clientHeight - 24);
-  const sc = Math.min(aw / S.W, ah / S.H), cssW = Math.round(S.W * sc), cssH = Math.round(S.H * sc), dpr = Math.min(window.devicePixelRatio || 1, 2);
-  cv.style.width = cssW + 'px'; cv.style.height = cssH + 'px';
-  if (cv.width !== Math.round(cssW * dpr) || cv.height !== Math.round(cssH * dpr)) { cv.width = Math.round(cssW * dpr); cv.height = Math.round(cssH * dpr); }
+let EDG = null, edCtx = store.get('mrphoto_pro_edctx', true) !== false, edGrid = false, edGridT = 0;
+const z2s = z => Math.round(1000 * Math.log(z / ZMIN) / Math.log(ZMAX / ZMIN));
+const s2z = v => ZMIN * Math.pow(ZMAX / ZMIN, v / 1000);
+const fmtDeg = v => (Math.round(v * 10) / 10) + '°';
+function gridPulse(ms) { edGrid = true; clearTimeout(edGridT); edGridT = setTimeout(() => { edGrid = false; refresh(); }, ms || 600); }
+function coverScale(p, rot, w, h) { const r = ((rot % 4) + 4) % 4, rw = r % 2 ? p.h : p.w, rh = r % 2 ? p.w : p.h; return S.fill ? Math.max(w / rw, h / rh) : Math.min(w / rw, h / rh); }
+function normAngle(p) { // बारीक कोण हमेशा -45°…45° में रखो, बाकी 90° के घुमाव में चला जाए (दिखावट वही रहती है)
+  const q = Math.round(p.fine / 90); if (!q) return;
+  const nr = (((p.rot + q) % 4) + 4) % 4, f = coverScale(p, p.rot, S.W, S.H) / coverScale(p, nr, S.W, S.H);
+  p.fine -= q * 90; p.rot = nr; p.zoom = clamp(p.zoom * f, ZMIN, ZMAX);
 }
+function sizeEditor() {
+  const cv = $('edCv'), wrap = $('edWrap'), cs = getComputedStyle(wrap), dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const aw = Math.max(100, wrap.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight));
+  const ah = Math.max(100, wrap.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom));
+  const ar = S.W / S.H;
+  let vw, vh, fw, fh, fx, fy;
+  if (edCtx) { // पूरा दृश्य: बीच में कटने वाला फ्रेम, बाहर का हिस्सा धुंधला
+    vw = Math.floor(aw); vh = Math.floor(ah);
+    const mw = vw * 0.74, mh = vh * 0.80;
+    fw = Math.min(mw, mh * ar); fh = fw / ar; fx = (vw - fw) / 2; fy = (vh - fh) / 2;
+  } else { // पुराना दृश्य: सिर्फ फ्रेम
+    const sc = Math.min(aw / S.W, ah / S.H); fw = Math.round(S.W * sc); fh = Math.round(S.H * sc); vw = fw; vh = fh; fx = 0; fy = 0;
+  }
+  cv.classList.toggle('ctx', edCtx);
+  cv.style.width = vw + 'px'; cv.style.height = vh + 'px';
+  const pw = Math.round(vw * dpr), ph = Math.round(vh * dpr);
+  if (cv.width !== pw || cv.height !== ph) { cv.width = pw; cv.height = ph; }
+  EDG = { vw: vw, vh: vh, fx: fx, fy: fy, fw: fw, fh: fh, dpr: dpr };
+}
+function fitCalc(p) { // पूरी फोटो व्यू में समा जाए
+  const g = EDG; if (!g) return;
+  const r = ((p.rot % 4) + 4) % 4, rw = r % 2 ? p.h : p.w, rh = r % 2 ? p.w : p.h, th = p.fine * Math.PI / 180;
+  const bw = Math.abs(rw * Math.cos(th)) + Math.abs(rh * Math.sin(th)), bh = Math.abs(rw * Math.sin(th)) + Math.abs(rh * Math.cos(th));
+  const need = Math.min(g.vw * 0.94 / bw, g.vh * 0.94 / bh), s0 = coverScale(p, p.rot, g.fw, g.fh);
+  p.zoom = clamp(need / s0, ZMIN, ZMAX); p.ox = 0; p.oy = 0;
+}
+function fitWhole() { const p = cur(); if (!p) return; if (!EDG) sizeEditor(); fitCalc(p); syncEditor(); refresh(); }
 function drawEditor() {
   if (!cropOpen || !cur()) return;
   sizeEditor();
-  const cv = $('edCv'), c = cv.getContext('2d'), w = cv.width, h = cv.height;
-  c.clearRect(0, 0, w, h);
-  drawPhotoInto(c, cur(), 0, 0, w, h, 1400);
+  const p = cur();
+  if (p.fit) { p.fit = false; fitCalc(p); syncEditor(); } // स्कैन / शेयर की फोटो पहली बार पूरी दिखे
+  const g = EDG, cv = $('edCv'), c = cv.getContext('2d'), d = g.dpr;
+  c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, cv.width, cv.height);
+  const fx = g.fx * d, fy = g.fy * d, fw = g.fw * d, fh = g.fh * d;
+  if (!edCtx) drawPhotoInto(c, p, 0, 0, cv.width, cv.height, 1400);
+  else {
+    c.fillStyle = '#0c1713'; c.fillRect(0, 0, cv.width, cv.height);
+    paintPhoto(c, p, fx, fy, fw, fh, 1400);
+    c.fillStyle = 'rgba(6,16,12,.68)'; c.beginPath(); c.rect(0, 0, cv.width, cv.height); c.rect(fx, fy, fw, fh); c.fill('evenodd');
+    drawPhotoInto(c, p, fx, fy, fw, fh, 1400);
+    c.save(); c.strokeStyle = 'rgba(0,0,0,.55)'; c.lineWidth = Math.max(4, d * 4); c.strokeRect(fx, fy, fw, fh); c.strokeStyle = 'rgba(255,255,255,.98)'; c.lineWidth = Math.max(1.5, d * 1.5); c.strokeRect(fx, fy, fw, fh); c.restore();
+  }
   if (S.guide) {
-    c.save(); c.strokeStyle = 'rgba(255,179,0,.95)'; c.lineWidth = Math.max(1.5, w / 150); c.setLineDash([w / 28, w / 42]);
-    c.beginPath(); c.ellipse(w * 0.5, h * 0.44, w * 0.27, h * 0.34, 0, 0, Math.PI * 2); c.stroke();
-    c.setLineDash([w / 60, w / 40]); c.strokeStyle = 'rgba(255,179,0,.7)';
-    c.beginPath(); c.moveTo(w * 0.12, h * 0.40); c.lineTo(w * 0.88, h * 0.40); c.stroke();
+    c.save(); c.strokeStyle = 'rgba(255,179,0,.95)'; c.lineWidth = Math.max(1.5, fw / 150); c.setLineDash([fw / 28, fw / 42]);
+    c.beginPath(); c.ellipse(fx + fw * 0.5, fy + fh * 0.44, fw * 0.27, fh * 0.34, 0, 0, Math.PI * 2); c.stroke();
+    c.setLineDash([fw / 60, fw / 40]); c.strokeStyle = 'rgba(255,179,0,.7)';
+    c.beginPath(); c.moveTo(fx + fw * 0.12, fy + fh * 0.40); c.lineTo(fx + fw * 0.88, fy + fh * 0.40); c.stroke();
     c.restore();
+  }
+  if (edGrid) { // सीधा करते समय ग्रिड
+    c.save(); c.strokeStyle = 'rgba(255,255,255,.6)'; c.lineWidth = Math.max(1, d); c.beginPath();
+    for (let i = 1; i < 8; i++) { c.moveTo(fx + fw * i / 8, fy); c.lineTo(fx + fw * i / 8, fy + fh); c.moveTo(fx, fy + fh * i / 8); c.lineTo(fx + fw, fy + fh * i / 8); }
+    c.stroke(); c.restore();
   }
 }
 function syncEditor() {
   const p = cur(); if (!p) return;
-  $('edZoom').value = Math.round(p.zoom * 100); $('vZoom').textContent = Math.round(p.zoom * 100) + '%';
-  $('edFine').value = p.fine; $('vFine').textContent = p.fine + '°';
+  $('edZoom').value = z2s(p.zoom); $('vZoom').textContent = Math.round(p.zoom * 100) + '%';
+  $('edFine').value = clamp(p.fine, -45, 45); $('vFine').textContent = fmtDeg(p.fine);
   $('tRmBg').classList.toggle('on', p.rmBg); $('tolBox').classList.toggle('hidden', !p.rmBg);
   $('tolR').value = p.tol; $('vTol').textContent = p.tol;
+  $('tCtx').classList.toggle('on', edCtx);
 }
-function zoomStep(d) { const p = cur(); if (!p) return; p.zoom = clamp(Math.round((p.zoom + d) * 100) / 100, 0.2, 5); syncEditor(); refresh(); }
+function zoomStep(d) { const p = cur(); if (!p) return; p.zoom = clamp(p.zoom * (d > 0 ? 1.15 : 1 / 1.15), ZMIN, ZMAX); syncEditor(); refresh(); }
+function toggleCtx() { edCtx = !edCtx; store.set('mrphoto_pro_edctx', edCtx); syncEditor(); refresh(); }
+function nudgeFine(dv) { const p = cur(); if (!p) return; p.fine = Math.round((p.fine + dv) * 10) / 10; normAngle(p); gridPulse(); syncEditor(); refresh(); }
+function levelPhoto() { const p = cur(); if (!p) return; p.fine = 0; syncEditor(); refresh(); }
 function openCrop() {
   if (!photos.length) { toast('पहले फोटो जोड़ें'); return; }
   $('crop').classList.remove('hidden'); document.body.classList.add('noscroll'); cropOpen = true;
@@ -1113,14 +1337,15 @@ function closeCrop() {
 }
 function openOutput() {
   if (!photos.length) { toast('पहले फोटो जोड़ें!'); return; }
+  if ($('uspLang')) $('uspLang').value = SC.rawLang || 'auto';
   $('outModal').classList.remove('hidden'); document.body.classList.add('noscroll');
 }
 function closeOutput() { $('outModal').classList.add('hidden'); if (!cropOpen) document.body.classList.remove('noscroll'); }
-document.addEventListener('keydown', e => { if (e.key === 'Escape') { if (!$('outModal').classList.contains('hidden')) closeOutput(); else closeCrop(); } });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { if (!$('scanModal').classList.contains('hidden')) closeScan(); else if (!$('outModal').classList.contains('hidden')) closeOutput(); else closeCrop(); } });
 function edSet(k, v) {
-  const p = cur(); if (!p) return; p[k] = v;
-  if (k === 'zoom') $('vZoom').textContent = Math.round(v * 100) + '%';
-  if (k === 'fine') $('vFine').textContent = v + '°';
+  const p = cur(); if (!p) return;
+  if (k === 'zoom') { p.zoom = clamp(v, ZMIN, ZMAX); $('vZoom').textContent = Math.round(p.zoom * 100) + '%'; } else p[k] = v;
+  if (k === 'fine') { $('vFine').textContent = fmtDeg(v); gridPulse(); }
   if (k === 'tol') $('vTol').textContent = v;
   refresh();
 }
@@ -1148,28 +1373,57 @@ async function autoFace() {
     const b = f[0].boundingBox; p.rot = 0; p.fine = 0; p.flip = false;
     const s0 = S.fill ? Math.max(S.W / p.w, S.H / p.h) : Math.min(S.W / p.w, S.H / p.h);
     const headH = b.height * 1.45, s = 0.72 * S.H / headH;
-    p.zoom = clamp(s / s0, 0.3, 5);
+    p.zoom = clamp(s / s0, 0.3, ZMAX);
     const px = b.x + b.width / 2 - p.w / 2, py = b.y + b.height / 2 - 0.22 * b.height - p.h / 2;
     p.ox = -px * s / S.W; p.oy = (0.44 - 0.5) - py * s / S.H;
     syncEditor(); refresh(); toast('चेहरा सेट हो गया ✓');
   } catch (e) { toast('ऑटो क्रॉप नहीं चला — खुद एडजस्ट करें'); }
 }
-/* ड्रैग + पिंच */
+/* ड्रैग + दो उंगलियों से पिंच (ज़ूम) + ट्विस्ट (रोटेट) — उंगलियों के नीचे की फोटो वहीं टिकी रहती है */
 (function () {
-  const cv = $('edCv'), ptrs = new Map(); let lastD = 0;
-  cv.addEventListener('pointerdown', e => { ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY }); try { cv.setPointerCapture(e.pointerId); } catch (_) {} if (ptrs.size === 2) lastD = dist(); e.preventDefault(); });
-  cv.addEventListener('pointermove', e => {
-    const p = cur(); if (!p || !ptrs.has(e.pointerId)) return;
-    const prev = ptrs.get(e.pointerId), r = cv.getBoundingClientRect();
+  const cv = $('edCv'), ptrs = new Map();
+  const rel = (cx, cy) => { // स्क्रीन → फ्रेम-केंद्र से दूरी (css px)
+    const g = EDG, r = cv.getBoundingClientRect(); if (!g) return { x: 0, y: 0 };
+    return { x: (cx - r.left) * g.vw / (r.width || g.vw) - (g.fx + g.fw / 2), y: (cy - r.top) * g.vh / (r.height || g.vh) - (g.fy + g.fh / 2) };
+  };
+  function xf(p, m0, m1, k, ph) { // m0 → m1 पर पकड़ बिंदु, k = ज़ूम गुणा, ph = घुमाव (radian, घड़ी की दिशा +)
+    const g = EDG; if (!g) return;
+    const nz = clamp(p.zoom * k, ZMIN, ZMAX); k = nz / p.zoom;
+    const dx = p.ox * g.fw - m0.x, dy = p.oy * g.fh - m0.y, co = Math.cos(ph), si = Math.sin(ph);
+    p.ox = (m1.x + k * (dx * co - dy * si)) / g.fw; p.oy = (m1.y + k * (dx * si + dy * co)) / g.fh;
+    p.zoom = nz;
+    if (ph) { p.fine += ph * 180 / Math.PI; normAngle(p); }
+  }
+  cv.addEventListener('pointerdown', e => {
     ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    if (ptrs.size === 1) { p.ox += (e.clientX - prev.x) / r.width; p.oy += (e.clientY - prev.y) / r.height; }
-    else if (ptrs.size === 2) { const d = dist(); if (lastD) p.zoom = clamp(p.zoom * d / lastD, 0.2, 5); lastD = d; syncEditor(); }
-    refresh();
+    try { cv.setPointerCapture(e.pointerId); } catch (_) {}
+    if (ptrs.size >= 2) edGrid = true;
+    e.preventDefault();
   });
-  const up = e => { ptrs.delete(e.pointerId); lastD = 0; };
-  cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up); cv.addEventListener('pointerleave', up);
-  cv.addEventListener('wheel', e => { const p = cur(); if (!p) return; e.preventDefault(); p.zoom = clamp(p.zoom * Math.exp(-e.deltaY * 0.0012), 0.2, 5); syncEditor(); refresh(); }, { passive: false });
-  function dist() { const a = Array.from(ptrs.values()); return a.length < 2 ? 0 : Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y); }
+  cv.addEventListener('pointermove', e => {
+    const p = cur(); if (!p || !EDG || !ptrs.has(e.pointerId)) return;
+    const ids = Array.from(ptrs.keys()), prev = ptrs.get(e.pointerId), now = { x: e.clientX, y: e.clientY }, idx = ids.indexOf(e.pointerId);
+    if (ids.length === 1) {
+      xf(p, rel(prev.x, prev.y), rel(now.x, now.y), 1, 0);
+    } else if (idx < 2) { // पहली दो उंगलियां ही गिनें
+      const o = ptrs.get(ids[idx === 0 ? 1 : 0]), A0 = rel(prev.x, prev.y), A1 = rel(now.x, now.y), B = rel(o.x, o.y);
+      const m0 = { x: (A0.x + B.x) / 2, y: (A0.y + B.y) / 2 }, m1 = { x: (A1.x + B.x) / 2, y: (A1.y + B.y) / 2 };
+      const d0 = Math.hypot(A0.x - B.x, A0.y - B.y), d1 = Math.hypot(A1.x - B.x, A1.y - B.y);
+      let ph = Math.atan2(A1.y - B.y, A1.x - B.x) - Math.atan2(A0.y - B.y, A0.x - B.x);
+      if (ph > Math.PI) ph -= 2 * Math.PI; if (ph < -Math.PI) ph += 2 * Math.PI;
+      let k = 1; if (d0 > 6) k = d1 / d0; else ph = 0; // उंगलियां बहुत पास हों तो सिर्फ खिसकाना
+      xf(p, m0, m1, k, ph);
+    }
+    ptrs.set(e.pointerId, now); syncEditor(); refresh();
+  });
+  const up = e => { if (!ptrs.delete(e.pointerId)) return; if (ptrs.size < 2) gridPulse(300); };
+  cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up); cv.addEventListener('lostpointercapture', up);
+  cv.addEventListener('wheel', e => { // माउस: व्हील = ज़ूम (कर्सर पर), Shift + व्हील = रोटेट
+    const p = cur(); if (!p || !EDG) return; e.preventDefault();
+    const m = rel(e.clientX, e.clientY), dy = e.deltaY || e.deltaX;
+    if (e.shiftKey) { xf(p, m, m, 1, dy * 0.0022); gridPulse(); } else xf(p, m, m, Math.exp(-dy * 0.0012), 0);
+    syncEditor(); refresh();
+  }, { passive: false });
 })();
 
 /* ---------- साइज ---------- */
@@ -1339,7 +1593,7 @@ function todayDate() { const d = new Date(); S.date = String(d.getDate()).padSta
 /* ---------- UI ↔ स्टेट सिंक ---------- */
 document.addEventListener('click', e => {
   const b = e.target.closest('.seg [data-v]'); if (!b) return;
-  const k = b.closest('.seg').dataset.k, v = b.dataset.v;
+  const k = b.closest('.seg').dataset.k, v = b.dataset.v; if (!k) return;
   if (k === 'dpi' || k === 'printDpi') { S[k] = +v; persist(); syncUI(); } else setSel(k, v);
 });
 function syncUI() {
@@ -1368,7 +1622,8 @@ function syncUI() {
   const cc = $('customCard');
   if (cc && idx < 0) { cc.classList.add('active'); cc.innerHTML = '<span class="glyph"><i style="aspect-ratio:' + S.W + '/' + S.H + '"></i></span>कस्टम<span class="dim">' + S.W + '×' + S.H + ' mm</span>'; }
   else if (cc) { cc.classList.remove('active'); cc.innerHTML = '<span class="glyph"><svg class="ic"><use href="#i-plus"/></svg></span>कस्टम<span class="dim">खुद सेट करें</span>'; }
-  syncEditor();
+  [['teBorder', 'border'], ['teFill', 'fill'], ['teOne', 'oneLine'], ['teCut', 'cut']].forEach(a => { const el = $(a[0]); if (el) el.classList.toggle('on', S[a[1]]); });
+  syncMarginUI(); tplSync(); syncEditor();
 }
 
 /* ---------- नेविगेशन (नीचे के टैब / ड्रॉअर) ---------- */
@@ -1403,40 +1658,216 @@ function userPresets() {
   }
   return u;
 }
-const allPresets = () => DEF_PRESETS.concat(userPresets());
+const allPresets = () => tplList();
 function applyConfig(c) {
   PKEYS.forEach(k => { if (c[k] !== undefined && c[k] !== null && !(typeof c[k] === 'number' && isNaN(c[k]))) S[k] = c[k]; });
   sanitize(); if (c.N !== undefined) photos.forEach(p => p.copies = S.N); // टेम्पलेट की कॉपी = हर फोटो की कॉपी
   pvPage = 0; syncUI(); renderStrip(); refresh();
 }
-function applyPreset(i) { const p = allPresets()[i]; if (!p) return; applyConfig(p); $('cW').value = S.W; $('cH').value = S.H; showCap(); toast('"' + p.name + '" लागू ✓'); }
+function applyPreset(i) { if (TE) { toast('पहले टेम्पलेट एडिट सेव / रद्द करें'); return; } const p = allPresets()[i]; if (!p) return; applyConfig(normTpl(p)); $('cW').value = S.W; $('cH').value = S.H; showCap(); toast('"' + p.name + '" लागू ✓'); }
 function renderPresets() {
   $('presetScroll').innerHTML = allPresets().map((p, i) =>
     '<div class="pc" onclick="applyPreset(' + i + ')">' + esc(p.name) + '<small>' + p.W + '×' + p.H + ' • ' + p.N + ' कॉपी</small></div>').join('');
 }
-function renderPList() {
-  const u0 = DEF_PRESETS.length, list = allPresets();
-  $('presetList').innerHTML = list.map((p, i) =>
-    '<div class="preset-item"><div><strong>' + esc(p.name) + '</strong><br><small>' + p.W + '×' + p.H + ' mm • ' + p.N + ' कॉपी • ' + (p.paper || 'A4') + (i >= u0 ? ' • मेरा' : '') + '</small></div>' +
-    '<div style="display:flex;gap:6px"><button class="btn btn-primary btn-sm" onclick="applyPreset(' + i + ')">लागू</button>' +
-    (i >= u0 ? '<button class="btn btn-danger btn-sm" onclick="delPreset(' + (i - u0) + ')">✕</button>' : '') + '</div></div>').join('');
-}
 function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+/* ---------- सारे टेम्पलेट एक सूची में (डिफ़ॉल्ट भी एडिट / डिलीट हो सकते हैं) ---------- */
+const TPL_KEY = 'mrphoto_pro_tpl2';
+const LKEYS = ['W', 'H', 'N', 'paper', 'orient', 'margin', 'gap', 'border', 'fill', 'oneLine', 'cut', 'newRow', 'marginSplit', 'mL', 'mR', 'mT', 'mB', 'gapSplit', 'gapX', 'gapY'];
+const TPL_FILL = { orient: 'port', margin: 6, gap: 2.5, border: true, fill: true, oneLine: false, cut: false, newRow: false, marginSplit: false, mL: 6, mR: 6, mT: 6, mB: 6, gapSplit: false, gapX: 2.5, gapY: 2.5 };
+function normTpl(c) { // कोई खाना खाली हो तो भर दो, ताकि टेम्पलेट अपने आप में पूरा रहे
+  const o = Object.assign({}, c);
+  Object.keys(TPL_FILL).forEach(k => { if (o[k] === undefined || o[k] === null) o[k] = TPL_FILL[k]; });
+  if (!o.marginSplit) o.mL = o.mR = o.mT = o.mB = o.margin;
+  if (!o.gapSplit) o.gapX = o.gapY = o.gap;
+  return o;
+}
+function tplList() {
+  let t = store.get(TPL_KEY, null);
+  if (!Array.isArray(t)) { // पहली बार: डिफ़ॉल्ट + पुराने सेव्ड प्रीसेट एक ही सूची में
+    t = DEF_PRESETS.map((p, i) => Object.assign(normTpl(p), { def: i }));
+    userPresets().forEach(p => { if (p && p.name) t.push(p); });
+    store.set(TPL_KEY, t);
+  }
+  return t;
+}
+const tplSaveList = t => store.set(TPL_KEY, t);
+function renderPList() {
+  const mm = q => q.marginSplit ? '↑' + fmt(q.mT) + ' ←' + fmt(q.mL) + ' →' + fmt(q.mR) + ' ↓' + fmt(q.mB) : fmt(q.margin);
+  $('presetList').innerHTML = allPresets().map((p, i) => {
+    const q = normTpl(p);
+    return '<div class="preset-item"><div><strong>' + esc(p.name) + '</strong><br><small>' + fmt(p.W) + '×' + fmt(p.H) + ' mm • ' + p.N + ' कॉपी • ' + (p.paper || 'A4') + ' • मार्जिन ' + mm(q) + '</small></div>' +
+      '<div style="display:flex;gap:6px"><button class="btn amber sm" onclick="applyPreset(' + i + ')">लागू</button><button class="btn sm" onclick="tplEdit(' + i + ')" aria-label="एडिट">✎</button><button class="btn danger sm" onclick="delPreset(' + i + ')" aria-label="हटाएं">✕</button></div></div>';
+  }).join('') || '<p class="hint">कोई टेम्पलेट नहीं है — नीचे से नया बनाएं।</p>';
+}
 function savePreset() {
   const name = prompt('प्रीसेट का नाम:', 'मेरा ' + S.W + '×' + S.H + ' × ' + S.N);
   if (!name || !name.trim()) return;
   const cfg = { name: name.trim() }; PKEYS.forEach(k => cfg[k] = S[k]);
-  const u = userPresets(); u.push(cfg); store.set('mrphoto_pro_presets', u);
-  renderPresets(); renderPList(); toast('"' + cfg.name + '" सेव हो गया ✓');
+  const u = tplList(); u.push(cfg); tplSaveList(u);
+  renderPresets(); renderPList(); renderCustoms(); toast('"' + cfg.name + '" सेव हो गया ✓');
 }
 function delPreset(i) {
-  const u = userPresets(); if (!u[i]) return; if (!confirm('"' + u[i].name + '" डिलीट करें?')) return;
-  u.splice(i, 1); store.set('mrphoto_pro_presets', u); renderPresets(); renderPList();
+  const u = tplList(); if (!u[i]) return; if (!confirm('"' + u[i].name + '" डिलीट करें?')) return;
+  u.splice(i, 1); tplSaveList(u); renderPresets(); renderPList(); renderCustoms();
 }
-function clearPresets() {
-  if (!userPresets().length) { toast('कोई सेव्ड प्रीसेट नहीं है'); return; }
-  if (!confirm('सभी सेव्ड प्रीसेट डिलीट करें?')) return;
-  store.set('mrphoto_pro_presets', []); renderPresets(); renderPList(); toast('सब डिलीट हो गए');
+function resetTpls() {
+  if (!confirm('डिफ़ॉल्ट टेम्पलेट अपनी असली सेटिंग पर लौटाएं? (आपके बनाए टेम्पलेट बने रहेंगे)')) return;
+  const mine = tplList().filter(p => p.def === undefined);
+  tplSaveList(DEF_PRESETS.map((p, i) => Object.assign(normTpl(p), { def: i })).concat(mine));
+  renderPresets(); renderPList(); renderCustoms(); toast('डिफ़ॉल्ट टेम्पलेट वापस ✓');
+}
+function clearMyTpls() {
+  const all = tplList(), mine = all.filter(p => p.def === undefined);
+  if (!mine.length) { toast('आपका बनाया कोई टेम्पलेट नहीं है'); return; }
+  if (!confirm('आपके बनाए ' + mine.length + ' टेम्पलेट डिलीट करें?')) return;
+  tplSaveList(all.filter(p => p.def !== undefined)); renderPresets(); renderPList(); renderCustoms(); toast('डिलीट हो गए');
+}
+
+/* ---------- मार्जिन / गैप: ऊपर · बायां · दायां · नीचे (साइज टैब + टेम्पलेट एडिटर दोनों में) ---------- */
+const fmt = n => String(Math.round(n * 10) / 10);
+const effM = () => S.marginSplit ? { mL: S.mL, mR: S.mR, mT: S.mT, mB: S.mB } : { mL: S.margin, mR: S.margin, mT: S.margin, mB: S.margin };
+const effG = () => S.gapSplit ? { gapX: S.gapX, gapY: S.gapY } : { gapX: S.gap, gapY: S.gap };
+function marginGridHTML() {
+  const f = (k, lbl) => '<div class="mc ' + k + '"><label>' + lbl + '</label><input type="number" inputmode="decimal" data-m="' + k + '" min="0" max="60" step="0.5" oninput="setMargin(\'' + k + '\',this.value)"></div>';
+  return '<div class="mg">' + f('mT', 'ऊपर (Top) mm') + f('mL', 'बायां (Left)') + '<div class="mc mid"><i></i></div>' + f('mR', 'दायां (Right)') + f('mB', 'नीचे (Bottom) mm') + '</div>' +
+    '<div class="rows2" style="margin-top:8px"><button class="btn line sm" onclick="eqMarginAll()">चारों बराबर करें</button><button class="btn line sm" onclick="zeroMargins()">सब 0 mm</button></div>';
+}
+function setMargin(k, v) {
+  v = parseFloat(v); if (isNaN(v)) return; v = clamp(v, 0, 60);
+  if (!S.marginSplit) { S.marginSplit = true; S.mL = S.mR = S.mT = S.mB = S.margin; }
+  S[k] = v;
+  if (S.mL === S.mR && S.mR === S.mT && S.mT === S.mB) { S.margin = S.mL; S.marginSplit = false; }
+  syncUI(); refresh();
+}
+function eqMarginAll() { const m = effM(); S.marginSplit = false; S.margin = m.mL; S.mL = S.mR = S.mT = S.mB = m.mL; syncUI(); refresh(); toast('चारों मार्जिन ' + fmt(m.mL) + ' mm'); }
+function zeroMargins() { S.marginSplit = false; S.margin = 0; S.mL = S.mR = S.mT = S.mB = 0; syncUI(); refresh(); }
+function setGap(k, v) {
+  v = parseFloat(v); if (isNaN(v)) return; v = clamp(v, 0, 30);
+  if (!S.gapSplit) { S.gapSplit = true; S.gapX = S.gapY = S.gap; }
+  S[k] = v;
+  if (S.gapX === S.gapY) { S.gap = S.gapX; S.gapSplit = false; }
+  syncUI(); refresh();
+}
+function syncMarginUI() {
+  const m = effM();
+  document.querySelectorAll('.mg input[data-m]').forEach(i => { if (document.activeElement !== i) i.value = m[i.dataset.m]; });
+}
+
+/* ---------- "कितना साइज / कितनी फोटो आएंगी" की जानकारी ---------- */
+function fitHTML() {
+  const m = effM(), mt = '↑' + fmt(m.mT) + ' ←' + fmt(m.mL) + ' →' + fmt(m.mR) + ' ↓' + fmt(m.mB);
+  if (S.oneLine) {
+    const L = getLayout(totalCopies());
+    return '<b>' + S.paper + '</b> ' + (L.orient === 'land' ? 'लैंडस्केप' : 'पोर्ट्रेट') + ' · पेपर ' + fmt(L.pw0) + '×' + fmt(L.ph0) + ' mm<br>' +
+      'उपयोगी चौड़ाई <b>' + fmt(L.uW) + ' mm</b> (दाएं-बाएं मार्जिन ' + fmt(L.mL) + ' + ' + fmt(L.mR) + ')<br>' +
+      '<b>' + totalCopies() + ' फोटो एक लाइन में</b> → हर फोटो <b>' + fmt(L.pw) + '×' + fmt(L.ph) + ' mm</b>';
+  }
+  const L = capacity(S.W, S.H, S.paper), usedW = L.cols * L.pw + (L.cols - 1) * L.gx, usedH = L.rowsPer * L.ph + (L.rowsPer - 1) * L.gy;
+  let h = '<b>' + S.paper + '</b> ' + (L.orient === 'land' ? 'लैंडस्केप' : 'पोर्ट्रेट') + ' · पेपर ' + fmt(L.pw0) + '×' + fmt(L.ph0) + ' mm<br>' +
+    'मार्जिन (' + mt + ') हटाकर उपयोगी जगह: <b>' + fmt(L.uW) + '×' + fmt(L.uH) + ' mm</b><br>' +
+    '<b>' + fmt(S.W) + '×' + fmt(S.H) + ' mm</b> की <b>' + L.cols + ' × ' + L.rowsPer + ' = ' + L.perPage + ' फोटो</b> एक पेज पर' +
+    '<br><small style="color:var(--muted)">बची खाली जगह: दाएं-बाएं ' + fmt(L.uW - usedW) + ' mm · ऊपर-नीचे ' + fmt(L.uH - usedH) + ' mm</small>';
+  if (L.pw < S.W - 0.05) h += '<br><span style="color:var(--danger);font-weight:700">⚠ साइज उपयोगी जगह से बड़ा है — ' + fmt(L.pw) + '×' + fmt(L.ph) + ' mm तक छोटा करके लगेगा</span>';
+  return h;
+}
+function fitInfoUpdate() {
+  const h = fitHTML(), a = $('sizeCap'); if (a) a.innerHTML = h;
+  if (TE) { $('teInfo').innerHTML = h; drawMini(); }
+}
+function drawMini() { // पेपर का छोटा नक्शा: मार्जिन पीले में, फोटो हरे में
+  const cv = $('teMini'); if (!cv) return;
+  const L = S.oneLine ? getLayout(totalCopies()) : capacity(S.W, S.H, S.paper);
+  const box = cv.parentNode.clientWidth || 300, dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const sc = Math.min(210 / L.ph0, (box - 8) / L.pw0), W = L.pw0 * sc, H = L.ph0 * sc;
+  cv.style.width = W + 'px'; cv.style.height = H + 'px'; cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+  const c = cv.getContext('2d'); c.setTransform(dpr, 0, 0, dpr, 0, 0);
+  c.fillStyle = '#fff'; c.fillRect(0, 0, W, H);
+  c.fillStyle = 'rgba(255,179,0,.30)';
+  c.fillRect(0, 0, W, L.mT * sc); c.fillRect(0, H - L.mB * sc, W, L.mB * sc);
+  c.fillRect(0, L.mT * sc, L.mL * sc, H - (L.mT + L.mB) * sc); c.fillRect(W - L.mR * sc, L.mT * sc, L.mR * sc, H - (L.mT + L.mB) * sc);
+  const n = L.one ? Math.max(1, totalCopies()) : L.perPage, cols = L.cols, used = Math.min(cols, n), gridW = used * L.pw + (used - 1) * L.gx;
+  const ox = L.mL + (L.uW - gridW) / 2, y0 = L.mT + L.rib;
+  c.fillStyle = '#cfe1d7'; c.strokeStyle = '#1f5a45'; c.lineWidth = 1;
+  for (let i = 0; i < Math.min(n, 400); i++) {
+    const col = i % cols, row = Math.floor(i / cols), x = (ox + col * (L.pw + L.gx)) * sc, y = (y0 + row * (L.ph + L.gy)) * sc, w = L.pw * sc, h = L.ph * sc;
+    c.fillRect(x, y, w, h); c.strokeRect(x + .5, y + .5, Math.max(1, w - 1), Math.max(1, h - 1));
+  }
+  c.strokeStyle = '#0f1f19'; c.lineWidth = 1.5; c.strokeRect(.75, .75, W - 1.5, H - 1.5);
+  c.fillStyle = '#7a5600'; c.font = '700 9px system-ui,sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
+  if (L.mT * sc >= 10) c.fillText(fmt(L.mT), W / 2, L.mT * sc / 2);
+  if (L.mB * sc >= 10) c.fillText(fmt(L.mB), W / 2, H - L.mB * sc / 2);
+  if (L.mL * sc >= 14) c.fillText(fmt(L.mL), L.mL * sc / 2, H / 2);
+  if (L.mR * sc >= 14) c.fillText(fmt(L.mR), W - L.mR * sc / 2, H / 2);
+}
+
+/* ---------- साइज-लिस्ट में नया साइज जोड़ना ---------- */
+function addSizeToList(w, h, name) {
+  if (SIZES.some(s => s.w === w && s.h === h)) { toast('यह साइज लिस्ट में पहले से है'); return; }
+  name = (name || (fmt(w) + '×' + fmt(h))).slice(0, 24);
+  SIZES.push({ n: name, w: w, h: h }); saveSizes(); buildSizes(); syncUI(); tplRenderSizes(); toast('"' + name + '" साइज लिस्ट में जोड़ा ✓');
+}
+function addSizeFromCustom() {
+  const w = parseFloat($('cW').value), h = parseFloat($('cH').value);
+  if (!(w >= 10 && w <= 280 && h >= 10 && h <= 280)) { toast('चौड़ाई / ऊँचाई 10 से 280 mm के बीच डालें'); return; }
+  const name = prompt('इस साइज का नाम:', fmt(w) + '×' + fmt(h)); if (name === null) return;
+  addSizeToList(w, h, name.trim());
+}
+function tplAddSize() { const name = prompt('इस साइज का नाम:', fmt(S.W) + '×' + fmt(S.H)); if (name === null) return; addSizeToList(S.W, S.H, name.trim()); }
+
+/* ---------- टेम्पलेट एडिटर (साइज + कॉपी + पेपर + चारों मार्जिन + गैप, सब एक जगह) ---------- */
+let TE = null;
+function tplRenderSizes() {
+  const el = $('teSizes'); if (!el) return;
+  el.innerHTML = SIZES.map((s, i) => '<span class="saved-chip' + (s.w === S.W && s.h === S.H ? ' on' : '') + '" onclick="tplPickSize(' + i + ')">' + esc(s.n) + ' <small>' + fmt(s.w) + '×' + fmt(s.h) + '</small></span>').join('');
+}
+function tplPickSize(i) { const s = SIZES[i]; if (!s) return; S.W = s.w; S.H = s.h; syncUI(); refresh(); }
+function tplEdit(i) {
+  const list = allPresets(); let base;
+  if (i >= 0) { if (!list[i]) return; base = normTpl(list[i]); base.name = list[i].name; }
+  else { base = { name: 'मेरा टेम्पलेट' }; PKEYS.forEach(k => base[k] = S[k]); base = normTpl(base); }
+  if (sizeEdit) toggleSizeEdit();
+  TE = { idx: i, snapS: Object.assign({}, S), snapCopies: photos.map(p => p.copies) };
+  applyConfig(base);
+  $('teTitle').textContent = i >= 0 ? 'टेम्पलेट एडिट करें' : 'नया टेम्पलेट';
+  $('teName').value = base.name;
+  $('teSaveNew').classList.toggle('hidden', i < 0);
+  $('tplModal').classList.remove('hidden'); document.body.classList.add('noscroll');
+  $('tplModal').querySelector('.dialog').scrollTop = 0;
+  syncUI(); fitInfoUpdate();
+}
+function tplSync() {
+  if (!TE) return;
+  const setv = (id, v) => { const el = $(id); if (el && document.activeElement !== el) el.value = v; };
+  setv('teW', S.W); setv('teH', S.H); setv('teN', S.N);
+  const g = effG(); setv('teGX', g.gapX); setv('teGY', g.gapY);
+  tplRenderSizes();
+}
+function tplDim(k, v) { v = parseFloat(v); if (isNaN(v) || v < 10) return; S[k] = Math.min(v, 280); syncUI(); refresh(); }
+function tplSwap() { const t = S.W; S.W = S.H; S.H = t; syncUI(); refresh(); }
+function tplCopies(v) { const n = parseInt(v); if (isNaN(n) || n < 1) return; setAllCopies(n); syncUI(); }
+function tplFill() { autoFill(); syncUI(); }
+function tplClose() { TE = null; $('tplModal').classList.add('hidden'); if (!cropOpen) document.body.classList.remove('noscroll'); }
+function tplCancel() {
+  if (!TE) return;
+  const t = TE; tplClose();
+  Object.assign(S, t.snapS); sanitize();
+  photos.forEach((p, i) => { if (t.snapCopies[i] !== undefined) p.copies = t.snapCopies[i]; });
+  syncUI(); renderStrip(); refresh();
+}
+function tplSave(asNew) {
+  if (!TE) return;
+  const name = ($('teName').value || '').trim().slice(0, 28);
+  if (!name) { toast('टेम्पलेट का नाम लिखें'); $('teName').focus(); return; }
+  const list = tplList(), edit = TE.idx >= 0 && !asNew, cfg = {};
+  if (edit) Object.assign(cfg, list[TE.idx]); else PKEYS.forEach(k => cfg[k] = S[k]);
+  LKEYS.forEach(k => cfg[k] = S[k]);
+  cfg.name = name;
+  if (!edit) delete cfg.def;
+  if (edit) list[TE.idx] = cfg; else list.push(cfg);
+  tplSaveList(list); tplClose();
+  renderPresets(); renderPList(); renderCustoms(); syncUI(); refresh();
+  toast('"' + name + '" सेव हो गया ✓ — ' + (edit ? 'बदलाव लागू' : 'नया टेम्पलेट बना'));
 }
 
 /* ---------- आउटपुट: पेज इमेज बनाना ---------- */
@@ -1621,6 +2052,680 @@ async function doShare() {
   } catch (e) { hideProgress(); toast('शेयर नहीं हो पाया: ' + e.message, 3500); }
 }
 
+/* ---------- स्कैनर: (1) USB-OTG से सीधे प्रिंटर में (IPP-USB + eSCL), (2) कंप्यूटर पर "MR Scanner Bridge" ----------
+   USB: Android Chrome का WebUSB प्रिंटर से HTTP-over-USB (IPP-USB) बोलता है; उसी पर eSCL (AirScan) स्कैन चलता है।
+   WiFi: ब्राउज़र लोकल नेटवर्क के प्रिंटर से सीधे बात नहीं कर सकता — इसलिए Mopria Scan / प्रिंटर ऐप से Share, या कंप्यूटर Bridge। */
+const BRIDGE = 'http://localhost:8765';
+const SC = Object.assign({ dpi: 300, color: 1, area: 'A4', dev: '', token: '', src: 'usb', multi: '0', auto: '1', rawLang: 'auto' }, store.get('mrphoto_pro_scan', {}) || {});
+const scSave = () => store.set('mrphoto_pro_scan', SC);
+const stampNow = () => new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14);
+const scBatch = []; // कई-स्कैन मोड में जमा हुई फोटो (File)
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+function scTimeout(ms) { const ac = new AbortController(); setTimeout(() => ac.abort(), ms); return ac.signal; }
+function scGet(path, ms) {
+  const url = BRIDGE + path + (path.indexOf('?') < 0 ? '?' : '&') + 't=' + encodeURIComponent(SC.token || '');
+  return fetch(url, { mode: 'cors', cache: 'no-store', signal: scTimeout(ms || 4000) });
+}
+const SC_SCREENS = ['scHome', 'scWait', 'scOff', 'scPair', 'scReady'];
+function scShow(id) { SC_SCREENS.forEach(x => $(x).classList.toggle('hidden', x !== id)); }
+function scSync() {
+  document.querySelectorAll('#scanModal [data-sc]').forEach(g => {
+    const k = g.dataset.sc; g.querySelectorAll('[data-v]').forEach(b => b.classList.toggle('on', String(SC[k]) === b.dataset.v));
+  });
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('#scanModal [data-sc] [data-v]'); if (!b || b.disabled) return;
+  const k = b.closest('[data-sc]').dataset.sc; SC[k] = (k === 'dpi' || k === 'color') ? +b.dataset.v : b.dataset.v; scSave(); scSync();
+});
+function openScan() {
+  $('scanModal').classList.remove('hidden'); document.body.classList.add('noscroll'); scSync();
+  scShow('scHome'); scHomeRefresh(); scBridgeSilent(); scBatchRender();
+}
+function closeScan() { $('scanModal').classList.add('hidden'); if (!cropOpen) document.body.classList.remove('noscroll'); }
+
+/* ===== USB: HTTP-over-USB (IPP-USB, class 7 / subclass 1 / protocol 4) ===== */
+const USB_OK = !!(navigator.usb && window.isSecureContext);
+const scUsb = { list: [], tr: null, caps: null, dev: null };   // list = अनुमति मिले USB प्रिंटर
+const isPrinterUsb = d => (d.configurations || []).some(c => c.interfaces.some(i => i.alternates.some(a => a.interfaceClass === 7)));
+const usbName = d => ((d.manufacturerName || '') + ' ' + (d.productName || '')).trim() || ('USB प्रिंटर ' + d.vendorId.toString(16) + ':' + d.productId.toString(16));
+const enc = new TextEncoder(), dec = new TextDecoder();
+
+class Buf { // बढ़ने वाला बाइट-बफ़र (बार-बार कॉपी से बचने के लिए)
+  constructor() { this.a = new Uint8Array(65536); this.n = 0; }
+  push(u8) {
+    if (this.n + u8.length > this.a.length) { const b = new Uint8Array(Math.max(this.a.length * 2, this.n + u8.length)); b.set(this.a.subarray(0, this.n)); this.a = b; }
+    this.a.set(u8, this.n); this.n += u8.length;
+  }
+  view() { return this.a.subarray(0, this.n); }
+}
+function findSeq(a, n, seq, from) {
+  outer: for (let i = from || 0; i <= n - seq.length; i++) { for (let j = 0; j < seq.length; j++) if (a[i + j] !== seq[j]) continue outer; return i; }
+  return -1;
+}
+const CRLF2 = [13, 10, 13, 10], CRLF = [13, 10];
+function parseChunked(a, n, start) { // पूरा chunked body मिल गया हो तो {body, end}, वरना null
+  const parts = []; let p = start, total = 0;
+  for (;;) {
+    const e = findSeq(a, n, CRLF, p); if (e < 0) return null;
+    const size = parseInt(dec.decode(a.subarray(p, e)).split(';')[0].trim(), 16); if (isNaN(size)) throw new Error('प्रिंटर का जवाब समझ नहीं आया');
+    p = e + 2;
+    if (size === 0) { // आख़िरी chunk: सीधे CRLF, या trailer + खाली लाइन
+      if (n < p + 2) return null;
+      if (a[p] === 13 && a[p + 1] === 10) { p += 2; break; }
+      const t = findSeq(a, n, CRLF2, p); if (t < 0) return null; p = t + 4; break;
+    }
+    if (n < p + size + 2) return null;
+    parts.push(a.slice(p, p + size)); total += size; p += size + 2;
+  }
+  const body = new Uint8Array(total); let o = 0; for (const x of parts) { body.set(x, o); o += x.length; }
+  return { body, end: p };
+}
+class UsbHttp {
+  constructor(dev) { this.dev = dev; this.ok = false; }
+  async open() {
+    const d = this.dev;
+    if (!d.opened) await d.open();
+    if (!d.configuration) await d.selectConfiguration(d.configurations[0].configurationValue);
+    const cands = [];
+    for (const itf of d.configuration.interfaces) for (const alt of itf.alternates)
+      if (alt.interfaceClass === 7 && alt.interfaceSubclass === 1 && alt.interfaceProtocol === 4) cands.push({ itf, alt });
+    if (!cands.length) { const e = new Error('इस प्रिंटर में USB-स्कैन (IPP-USB / eSCL) नहीं है'); e.code = 'noipp'; throw e; }
+    let lastErr = null;
+    for (const c of cands) {
+      try {
+        await d.claimInterface(c.itf.interfaceNumber);
+        await d.selectAlternateInterface(c.itf.interfaceNumber, c.alt.alternateSetting);
+        const eps = c.alt.endpoints.filter(x => x.type === 'bulk');
+        this.inEp = eps.find(x => x.direction === 'in'); this.outEp = eps.find(x => x.direction === 'out');
+        if (!this.inEp || !this.outEp) throw new Error('USB endpoint नहीं मिले');
+        this.itf = c.itf.interfaceNumber; this.ok = true; return;
+      } catch (e) { lastErr = e; }
+    }
+    const e = new Error('USB इंटरफ़ेस नहीं मिल पाया (' + (lastErr && lastErr.message || '') + ')'); e.code = 'claim'; throw e;
+  }
+  async close() { try { this.ok = false; if (this.dev.opened) await this.dev.close(); } catch (_) {} }
+  async request(method, path, headers, body) {
+    if (!this.ok) await this.open();
+    body = body || new Uint8Array(0);
+    let h = method + ' ' + path + ' HTTP/1.1\r\nHost: localhost\r\nUser-Agent: MRPhoto\r\nAccept: */*\r\n';
+    for (const k in (headers || {})) h += k + ': ' + headers[k] + '\r\n';
+    if (body.length || method === 'POST') h += 'Content-Length: ' + body.length + '\r\n';
+    h += '\r\n';
+    const head = enc.encode(h), msg = new Uint8Array(head.length + body.length); msg.set(head); msg.set(body, head.length);
+    for (let o = 0; o < msg.length; o += 16384) {
+      const r = await this.dev.transferOut(this.outEp.endpointNumber, msg.subarray(o, o + 16384));
+      if (r.status !== 'ok') throw new Error('प्रिंटर को भेजने में रुकावट (' + r.status + ')');
+    }
+    const buf = new Buf(), want = Math.max(32768, Math.ceil(32768 / this.inEp.packetSize) * this.inEp.packetSize);
+    let hdrEnd = -1, status = 0, hdrs = {}, mode = '', clen = 0, idle = 0;
+    for (;;) {
+      if (hdrEnd >= 0) { // पूरा जवाब आ गया?
+        if (status < 200 || status === 204 || status === 304 || method === 'HEAD') {
+          if (status >= 100 && status < 200) { buf.a.copyWithin(0, hdrEnd, buf.n); buf.n -= hdrEnd; hdrEnd = -1; continue; } // 100-continue छोड़ें
+          return { status, headers: hdrs, body: new Uint8Array(0) };
+        }
+        if (mode === 'len' && buf.n >= hdrEnd + clen) return { status, headers: hdrs, body: buf.a.slice(hdrEnd, hdrEnd + clen) };
+        if (mode === 'chunk') { const c = parseChunked(buf.a, buf.n, hdrEnd); if (c) return { status, headers: hdrs, body: c.body }; }
+      }
+      const r = await this.dev.transferIn(this.inEp.endpointNumber, want);
+      if (r.status === 'stall') { await this.dev.clearHalt('in', this.inEp.endpointNumber); continue; }
+      if (r.status !== 'ok') throw new Error('प्रिंटर से पढ़ने में रुकावट (' + r.status + ')');
+      const got = new Uint8Array(r.data.buffer, r.data.byteOffset, r.data.byteLength);
+      if (!got.length) { if (++idle > 3 && hdrEnd >= 0 && mode === 'none') return { status, headers: hdrs, body: buf.a.slice(hdrEnd, buf.n) }; if (idle > 200) throw new Error('प्रिंटर जवाब नहीं दे रहा'); continue; }
+      idle = 0; buf.push(got);
+      if (hdrEnd < 0) {
+        const i = findSeq(buf.a, buf.n, CRLF2, 0); if (i < 0) continue;
+        const lines = dec.decode(buf.a.subarray(0, i)).split('\r\n'); hdrs = {};
+        status = +(lines[0].split(' ')[1]) || 0;
+        for (const L of lines.slice(1)) { const k = L.indexOf(':'); if (k > 0) hdrs[L.slice(0, k).trim().toLowerCase()] = L.slice(k + 1).trim(); }
+        hdrEnd = i + 4;
+        mode = /chunked/i.test(hdrs['transfer-encoding'] || '') ? 'chunk' : (hdrs['content-length'] != null ? 'len' : 'none'); clen = +hdrs['content-length'] || 0;
+      }
+    }
+  }
+}
+
+/* ===== eSCL (AirScan): क्षमता पढ़ना, स्कैन भेजना, फोटो लेना ===== */
+function xmlText(root, name) { const n = root && root.getElementsByTagNameNS('*', name)[0]; return n ? (n.textContent || '').trim() : ''; }
+function xmlAll(root, name) { return root ? Array.from(root.getElementsByTagNameNS('*', name)) : []; }
+function parseCaps(xml) {
+  const d = new DOMParser().parseFromString(xml, 'text/xml');
+  const plat = xmlAll(d, 'PlatenInputCaps')[0];
+  if (!plat) throw new Error('यह स्कैनर फ्लैटबेड (शीशे पर रखकर) स्कैन नहीं बताता');
+  const res = xmlAll(plat, 'DiscreteResolution').map(r => +xmlText(r, 'XResolution')).filter(Boolean);
+  const rr = xmlAll(plat, 'ResolutionRange')[0], xr = rr && xmlAll(rr, 'XResolution')[0];
+  const formats = xmlAll(plat, 'DocumentFormat').concat(xmlAll(d, 'DocumentFormat')).map(x => x.textContent.trim());
+  return {
+    name: (xmlText(d, 'MakeAndModel') || xmlText(d, 'Manufacturer') || '').trim(),
+    maxW: +xmlText(plat, 'MaxWidth') || 2550, maxH: +xmlText(plat, 'MaxHeight') || 3507,
+    res: Array.from(new Set(res)).sort((a, b) => a - b),
+    resMin: xr ? +xmlText(xr, 'Min') || 0 : 0, resMax: xr ? +xmlText(xr, 'Max') || 0 : 0,
+    colors: xmlAll(plat, 'ColorMode').map(x => x.textContent.trim()),
+    jpeg: !formats.length || formats.some(f => /jpeg/i.test(f))
+  };
+}
+const AREA_300 = { A4: [2480, 3508], A5: [1748, 2480], '4x6': [1200, 1800] }; // 1/300 इंच इकाई
+function pickRes(caps, want) {
+  if (caps.res.length) return caps.res.reduce((b, x) => Math.abs(x - want) < Math.abs(b - want) ? x : b, caps.res[0]);
+  if (caps.resMax) return Math.max(caps.resMin || 0, Math.min(caps.resMax, want));
+  return want;
+}
+function esclSettings(caps, o) {
+  const a = AREA_300[o.area] || [caps.maxW, caps.maxH];
+  const w = Math.min(a[0], caps.maxW), h = Math.min(a[1], caps.maxH), dpi = pickRes(caps, o.dpi);
+  const gray = o.color === 2 && caps.colors.some(c => /Grayscale/i.test(c));
+  const color = gray ? (caps.colors.find(c => /Grayscale8/i.test(c)) || caps.colors.find(c => /Grayscale/i.test(c))) : (caps.colors.find(c => /RGB24/i.test(c)) || 'RGB24');
+  return '<?xml version="1.0" encoding="UTF-8"?>' +
+    '<scan:ScanSettings xmlns:pwg="http://www.pwg.org/schemas/2010/12/sm" xmlns:scan="http://schemas.hp.com/imaging/escl/2011/05/03">' +
+    '<pwg:Version>2.0</pwg:Version><pwg:ScanRegions><pwg:ScanRegion><pwg:ContentRegionUnits>escl:ThreeHundredthsOfInches</pwg:ContentRegionUnits>' +
+    '<pwg:XOffset>0</pwg:XOffset><pwg:YOffset>0</pwg:YOffset><pwg:Width>' + w + '</pwg:Width><pwg:Height>' + h + '</pwg:Height></pwg:ScanRegion></pwg:ScanRegions>' +
+    '<pwg:InputSource>Platen</pwg:InputSource><scan:ColorMode>' + color + '</scan:ColorMode>' +
+    '<scan:XResolution>' + dpi + '</scan:XResolution><scan:YResolution>' + dpi + '</scan:YResolution>' +
+    '<pwg:DocumentFormat>image/jpeg</pwg:DocumentFormat></scan:ScanSettings>';
+}
+async function esclRoot(tr) {
+  for (const root of ['/eSCL', '/escl', '/scan']) {
+    const r = await tr.request('GET', root + '/ScannerCapabilities');
+    if (r.status === 200) return { root, caps: parseCaps(dec.decode(r.body)) };
+  }
+  throw new Error('प्रिंटर ने स्कैन की जानकारी नहीं दी (eSCL सपोर्ट नहीं)');
+}
+async function esclScan(tr, root, caps, o, onTick) {
+  let loc = '';
+  for (let i = 0; i < 12 && !loc; i++) {
+    const r = await tr.request('POST', root + '/ScanJobs', { 'Content-Type': 'text/xml' }, enc.encode(esclSettings(caps, o)));
+    if (r.status === 201 || r.status === 200) { loc = (r.headers.location || '').replace(/^https?:\/\/[^/]+/i, ''); if (!loc) throw new Error('प्रिंटर ने स्कैन-जॉब का पता नहीं दिया'); }
+    else if (r.status === 503) { onTick && onTick('प्रिंटर व्यस्त है, रुकिए…'); await sleep(1500); }
+    else throw new Error('प्रिंटर ने स्कैन नहीं माना (कोड ' + r.status + ')');
+  }
+  if (!loc) throw new Error('प्रिंटर लगातार व्यस्त है');
+  if (!/\/$/.test(loc)) loc += '/';
+  try {
+    for (let i = 0; i < 90; i++) { // ≈ 3 मिनट तक
+      const r = await tr.request('GET', loc + 'NextDocument');
+      if (r.status === 200 && r.body.length) return r.body;
+      if (r.status === 503 || r.status === 200) { await sleep(1500); continue; }
+      throw new Error(r.status === 404 ? 'स्कैन पूरा नहीं हुआ (कवर खुला है / पेपर नहीं रखा?)' : 'स्कैन की फोटो नहीं मिली (कोड ' + r.status + ')');
+    }
+    throw new Error('स्कैन में बहुत देर लगी');
+  } finally { try { await tr.request('DELETE', loc.replace(/\/$/, '')); } catch (_) {} }
+}
+
+/* ===== होम स्क्रीन: मिले हुए USB प्रिंटर, Bridge, WiFi रास्ता ===== */
+async function scUsbRefresh() {
+  if (!USB_OK) { scUsb.list = []; return; }
+  try { scUsb.list = (await navigator.usb.getDevices()).filter(isPrinterUsb); } catch (_) { scUsb.list = []; }
+}
+async function scHomeRefresh() {
+  await scUsbRefresh();
+  const box = $('scUsbList');
+  box.innerHTML = scUsb.list.map((d, i) => '<button class="btn block scdev" onclick="scUsbUse(' + i + ')"><svg class="ic sm"><use href="#i-scan"/></svg><span>' + esc(usbName(d)) + '</span><small>USB जुड़ा ✓</small></button>').join('');
+  $('scUsbMsg').textContent = !USB_OK
+    ? (window.isSecureContext ? 'इस ब्राउज़र में USB नहीं चलता — Android / कंप्यूटर के Chrome या Edge में खोलें।' : 'USB के लिए ऐप https:// पते पर खुला होना चाहिए।')
+    : scUsb.list.length ? 'ऊपर प्रिंटर चुनें। नया प्रिंटर हो तो नीचे बटन दबाएं।' : 'प्रिंटर को OTG केबल से फोन में लगाइए, चालू कीजिए, फिर नीचे बटन दबाइए।';
+  $('scUsbBtn').disabled = !USB_OK;
+}
+async function scUsbPick() { // ब्राउज़र का चुनाव-डायलॉग (सुरक्षा के लिए पहली बार ज़रूरी)
+  try {
+    const d = await navigator.usb.requestDevice({ filters: [{ classCode: 7 }] });
+    await scHomeRefresh();
+    const i = scUsb.list.findIndex(x => x === d || (x.vendorId === d.vendorId && x.productId === d.productId && x.serialNumber === d.serialNumber));
+    scUsbUse(i >= 0 ? i : 0);
+  } catch (e) { if (e.name !== 'NotFoundError') toast('USB प्रिंटर नहीं जुड़ा: ' + e.message, 4000); }
+}
+async function scUsbUse(i) {
+  const d = scUsb.list[i]; if (!d) return;
+  scShow('scWait'); $('scWaitMsg').textContent = 'प्रिंटर से बात कर रहा हूँ…';
+  try {
+    if (scUsb.tr) await scUsb.tr.close();
+    const tr = new UsbHttp(d); await tr.open();
+    const info = await esclRoot(tr);
+    if (!info.caps.jpeg) throw new Error('इस स्कैनर से JPEG स्कैन नहीं मिलता');
+    scUsb.tr = tr; scUsb.caps = info.caps; scUsb.root = info.root; scUsb.dev = d; SC.src = 'usb'; scSave();
+    $('scWho').textContent = info.caps.name || usbName(d); $('scDevWrap').classList.add('hidden'); $('scMock').classList.add('hidden');
+    scApplyCaps(info.caps); $('scGo').disabled = false; scShow('scReady');
+  } catch (e) {
+    try { if (scUsb.tr) await scUsb.tr.close(); } catch (_) {}
+    scUsb.tr = null; scShow('scHome');
+    $('scUsbMsg').textContent = e.code === 'noipp'
+      ? 'यह प्रिंटर USB से स्कैन नहीं देता। नीचे "WiFi / प्रिंटर की ऐप" वाला तरीका या कंप्यूटर Bridge इस्तेमाल करें।'
+      : e.code === 'claim' || /claim|access|denied|busy/i.test(e.message)
+        ? 'USB प्रिंटर खुल नहीं पाया — शायद कोई दूसरा प्रोग्राम / ड्राइवर उसे इस्तेमाल कर रहा है (कंप्यूटर पर Windows ड्राइवर पकड़ लेता है; वहां Bridge चलाएं)।'
+        : 'प्रिंटर से बात नहीं हो पाई: ' + e.message;
+  }
+}
+function scApplyCaps(caps) { // जो क्वालिटी / रंग प्रिंटर देता है वही बटन दिखाएं
+  document.querySelectorAll('#scanModal [data-sc="dpi"] [data-v]').forEach(b => {
+    const v = +b.dataset.v, ok = !caps || (caps.res.length ? caps.res.some(x => Math.abs(x - v) <= x * 0.34) : true);
+    b.classList.toggle('hidden', !ok);
+  });
+  document.querySelectorAll('#scanModal [data-sc="color"] [data-v="2"]').forEach(b => b.classList.toggle('hidden', !!caps && !caps.colors.some(c => /Grayscale/i.test(c))));
+  if (caps) {
+    const vis = Array.from(document.querySelectorAll('#scanModal [data-sc="dpi"] [data-v]:not(.hidden)')).map(b => +b.dataset.v);
+    if (vis.length && !vis.includes(SC.dpi)) SC.dpi = vis.reduce((b, x) => Math.abs(x - SC.dpi) < Math.abs(b - SC.dpi) ? x : b, vis[0]);
+    if (SC.color === 2 && !caps.colors.some(c => /Grayscale/i.test(c))) SC.color = 1;
+  }
+  scSync();
+}
+if (USB_OK) {
+  navigator.usb.addEventListener('connect', async e => {
+    if (!isPrinterUsb(e.device)) return;
+    toast('🖨️ प्रिंटर जुड़ा: ' + usbName(e.device), 3000);
+    if (!$('scanModal').classList.contains('hidden') && !$('scHome').classList.contains('hidden')) scHomeRefresh();
+  });
+  navigator.usb.addEventListener('disconnect', e => {
+    if (!isPrinterUsb(e.device)) return;
+    if (scUsb.dev === e.device) { scUsb.tr = null; scUsb.dev = null; if (!$('scanModal').classList.contains('hidden') && SC.src === 'usb') { scShow('scHome'); } toast('प्रिंटर हटा दिया गया', 2500); }
+    if (!$('scanModal').classList.contains('hidden') && !$('scHome').classList.contains('hidden')) scHomeRefresh();
+  });
+}
+
+/* ===== कंप्यूटर Bridge (पहले जैसा) ===== */
+async function scBridgeSilent() { // होम पर चुपचाप देखें कि Bridge चालू है या नहीं
+  const b = $('scBridgeBtn'); b.textContent = '💻 कंप्यूटर के स्कैनर से (Windows Bridge)';
+  try { const r = await fetch(BRIDGE + '/ping', { mode: 'cors', cache: 'no-store', signal: scTimeout(1200) }); const j = await r.json(); if (j && j.ok) b.textContent = '💻 कंप्यूटर का स्कैनर — Bridge चालू है ✓'; } catch (_) {}
+}
+async function scProbe() {
+  scShow('scWait'); $('scWaitMsg').textContent = 'कंप्यूटर वाला स्कैनर प्रोग्राम खोज रहा हूँ…';
+  try {
+    const r = await fetch(BRIDGE + '/ping', { mode: 'cors', cache: 'no-store', signal: scTimeout(2500) });
+    const j = await r.json(); if (!j || !j.ok) throw new Error('bad');
+    const d = await scGet('/devices', 20000);
+    if (d.status === 403) { $('scPairMsg').textContent = SC.token ? 'कोड गलत है — विंडो में दिखा कोड फिर से डालें' : 'पहली बार जोड़ने के लिए कंप्यूटर की काली विंडो में दिखा 6 अंकों का कोड डालें'; scShow('scPair'); return; }
+    const dj = await d.json(); if (!d.ok) throw new Error(dj.error || 'devices');
+    const list = dj.devices || [];
+    $('scDev').innerHTML = list.length ? list.map(x => '<option value="' + esc(x.id) + '">' + esc(x.name || x.id) + '</option>').join('') : '<option value="">कोई स्कैनर नहीं मिला</option>';
+    if (list.some(x => x.id === SC.dev)) $('scDev').value = SC.dev; else SC.dev = list.length ? list[0].id : '';
+    SC.src = 'bridge'; scSave();
+    $('scWho').textContent = 'कंप्यूटर का स्कैनर'; $('scDevWrap').classList.remove('hidden'); scApplyCaps(null);
+    $('scMock').classList.toggle('hidden', !j.mock); $('scGo').disabled = !list.length;
+    scShow('scReady');
+  } catch (e) { scShow('scOff'); }
+}
+function scPairGo() { SC.token = ($('scCode').value || '').trim(); scSave(); scProbe(); }
+function scDevPick(v) { SC.dev = v; scSave(); }
+
+
+/* ===== ऑटो: एक स्कैन में कई फोटो अलग करना + तिरछी फोटो सीधी करना ===== */
+function dilateMask(src, W, H, r) { // box-dilation (prefix sums), दो पास
+  const tmp = new Uint8Array(W * H), out = new Uint8Array(W * H), pre = new Int32Array(Math.max(W, H) + 1);
+  for (let y = 0; y < H; y++) {
+    pre[0] = 0; for (let x = 0; x < W; x++) pre[x + 1] = pre[x] + src[y * W + x];
+    for (let x = 0; x < W; x++) tmp[y * W + x] = pre[Math.min(W, x + r + 1)] - pre[Math.max(0, x - r)] > 0 ? 1 : 0;
+  }
+  for (let x = 0; x < W; x++) {
+    pre[0] = 0; for (let y = 0; y < H; y++) pre[y + 1] = pre[y] + tmp[y * W + x];
+    for (let y = 0; y < H; y++) out[y * W + x] = pre[Math.min(H, y + r + 1)] - pre[Math.max(0, y - r)] > 0 ? 1 : 0;
+  }
+  return out;
+}
+function minAreaRect(pts) { // सबसे छोटा घूमा हुआ आयत (−45°…45°, 0.5° कदम; 0° के पास से शुरू)
+  const angs = []; for (let a = -45; a <= 45; a += 0.5) angs.push(a); angs.sort((p, q) => Math.abs(p) - Math.abs(q));
+  let best = null;
+  for (const a of angs) {
+    const t = a * Math.PI / 180, c = Math.cos(t), s = Math.sin(t); let u0 = 1e9, u1 = -1e9, v0 = 1e9, v1 = -1e9;
+    for (let i = 0; i < pts.length; i += 2) {
+      const u = pts[i] * c + pts[i + 1] * s, v = -pts[i] * s + pts[i + 1] * c;
+      if (u < u0) u0 = u; if (u > u1) u1 = u; if (v < v0) v0 = v; if (v > v1) v1 = v;
+    }
+    const area = (u1 - u0) * (v1 - v0);
+    if (!best || area < best.area * 0.998) { const uc = (u0 + u1) / 2, vc = (v0 + v1) / 2; best = { area, ang: a, w: u1 - u0, h: v1 - v0, cx: uc * c - vc * s, cy: uc * s + vc * c }; }
+  }
+  return best;
+}
+function findPhotoRects(d, W, H) { // d = RGBA; लौटाता है [{cx,cy,w,h,ang}] (इसी छोटे नाप के निर्देशांक में)
+  const N = W * H, m = Math.max(2, Math.round(Math.min(W, H) * 0.01)), step = Math.max(1, Math.floor((W + H) / 240)), sm = [[], [], []];
+  const bp = (x, y) => { const i = (y * W + x) * 4; sm[0].push(d[i]); sm[1].push(d[i + 1]); sm[2].push(d[i + 2]); };
+  for (let x = 0; x < W; x += step) { bp(x, m); bp(x, H - 1 - m); } for (let y = 0; y < H; y += step) { bp(m, y); bp(W - 1 - m, y); }
+  const med = a => { a.sort((p, q) => p - q); return a[a.length >> 1]; }, bg = [med(sm[0]), med(sm[1]), med(sm[2])], thr = 18;
+  const fg = new Uint8Array(N);
+  for (let i = 0, p = 0; i < N; i++, p += 4) if (Math.abs(d[p] - bg[0]) > thr || Math.abs(d[p + 1] - bg[1]) > thr || Math.abs(d[p + 2] - bg[2]) > thr) fg[i] = 1;
+  const dm = dilateMask(fg, W, H, Math.max(2, Math.round(Math.min(W, H) * 0.012)));
+  const lab = new Int32Array(N), comps = [], stack = new Int32Array(N);
+  for (let s0 = 0; s0 < N; s0++) {
+    if (!dm[s0] || lab[s0]) continue; const id = comps.length + 1; let sp = 0, area = 0; stack[sp++] = s0; lab[s0] = id;
+    while (sp) {
+      const i = stack[--sp]; area++; const x = i % W, y = (i / W) | 0;
+      if (x > 0 && dm[i - 1] && !lab[i - 1]) { lab[i - 1] = id; stack[sp++] = i - 1; }
+      if (x < W - 1 && dm[i + 1] && !lab[i + 1]) { lab[i + 1] = id; stack[sp++] = i + 1; }
+      if (y > 0 && dm[i - W] && !lab[i - W]) { lab[i - W] = id; stack[sp++] = i - W; }
+      if (y < H - 1 && dm[i + W] && !lab[i + W]) { lab[i + W] = id; stack[sp++] = i + W; }
+    }
+    comps.push({ id, area });
+  }
+  const keep = comps.filter(c => c.area >= N * 0.02).sort((a, b) => b.area - a.area).slice(0, 12), ext = {};
+  keep.forEach(c => ext[c.id] = { rmin: new Int32Array(H).fill(1e9), rmax: new Int32Array(H).fill(-1), cmin: new Int32Array(W).fill(1e9), cmax: new Int32Array(W).fill(-1) });
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const i = y * W + x; if (!fg[i]) continue; const e = ext[lab[i]]; if (!e) continue;
+    if (x < e.rmin[y]) e.rmin[y] = x; if (x > e.rmax[y]) e.rmax[y] = x; if (y < e.cmin[x]) e.cmin[x] = y; if (y > e.cmax[x]) e.cmax[x] = y;
+  }
+  const rects = [];
+  for (const c of keep) {
+    const e = ext[c.id], pts = [];
+    for (let y = 0; y < H; y++) if (e.rmax[y] >= 0) pts.push(e.rmin[y], y, e.rmax[y], y);
+    for (let x = 0; x < W; x++) if (e.cmax[x] >= 0) pts.push(x, e.cmin[x], x, e.cmax[x]);
+    if (pts.length < 8) continue; const r = minAreaRect(pts); if (r.w * r.h >= N * 0.015 && Math.min(r.w, r.h) > Math.min(W, H) * 0.08) rects.push(r);
+  }
+  rects.sort((a, b) => { const tol = 0.5 * Math.min(a.h, b.h, a.w, b.w); return Math.abs(a.cy - b.cy) > tol ? a.cy - b.cy : a.cx - b.cx; }); // पढ़ने का क्रम
+  return rects;
+}
+function autoSplitCore(src, sw, sh, makeCanvas) { // लौटाता है canvas की सूची, या null (पूरा पन्ना / कुछ नहीं मिला = जैसा है वैसा रखें)
+  const k = Math.min(1, 700 / Math.max(sw, sh)), W = Math.max(8, Math.round(sw * k)), H = Math.max(8, Math.round(sh * k));
+  const sc = makeCanvas(W, H), sx = sc.getContext('2d', { willReadFrequently: true }); sx.drawImage(src, 0, 0, W, H);
+  const rects = findPhotoRects(sx.getImageData(0, 0, W, H).data, W, H);
+  if (!rects.length) return null;
+  if (rects.length === 1 && rects[0].w * rects[0].h > 0.9 * W * H && Math.abs(rects[0].ang) < 1) return null;
+  const f = sw / W;
+  return rects.map(r => {
+    const inset = Math.min(r.w, r.h) * 0.01, ow = Math.max(8, Math.round((r.w - 2 * inset) * f)), oh = Math.max(8, Math.round((r.h - 2 * inset) * f));
+    const cv = makeCanvas(ow, oh), cx = cv.getContext('2d'), t = r.ang * Math.PI / 180;
+    cx.fillStyle = '#fff'; cx.fillRect(0, 0, ow, oh);
+    cx.translate(ow / 2, oh / 2); cx.rotate(-t); cx.translate(-r.cx * f, -r.cy * f); cx.drawImage(src, 0, 0, sw, sh);
+    return cv;
+  });
+}
+async function autoSplitFile(file) { // स्कैन की फाइल -> [फोटो फाइलें] (कुछ न मिले तो वही फाइल)
+  try {
+    const bmp = await createImageBitmap(file);
+    const cvs = autoSplitCore(bmp, bmp.width, bmp.height, (w, h) => { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; });
+    if (bmp.close) bmp.close(); if (!cvs) return [file];
+    const base = file.name.replace(/\.\w+$/, '');
+    return await Promise.all(cvs.map((c, i) => new Promise(res => c.toBlob(b => res(b ? new File([b], base + '-p' + (i + 1) + '.jpg', { type: 'image/jpeg' }) : file), 'image/jpeg', 0.93))));
+  } catch (e) { return [file]; }
+}
+
+/* ===== कई स्कैन लगातार: जमा करते जाएं, फिर सब एक साथ जोड़ें ===== */
+function scBatchRender() {
+  const n = scBatch.length;
+  $('scBatch').classList.toggle('hidden', !n);
+  $('scBatchTitle').textContent = n + ' फोटो जमा — पेपर बदलकर "एक और स्कैन" दबाएं';
+  $('scBatchThumbs').innerHTML = scBatch.map(f => '<img src="' + f._url + '" style="height:58px;border-radius:6px;flex:none" alt="">').join('');
+  $('scGo').lastChild.textContent = n ? 'एक और स्कैन' : 'स्कैन शुरू करें';
+  const pb = $('scPendBtn'); pb.classList.toggle('hidden', !n); pb.textContent = '✓ ' + n + ' फोटो तैयार — ऐप में जोड़ें';
+}
+function scBatchUndo() { const f = scBatch.pop(); if (f) URL.revokeObjectURL(f._url); scBatchRender(); }
+function scBatchDone() {
+  if (!scBatch.length) return;
+  const files = scBatch.splice(0); closeScan();
+  addPhotoFiles(files, { openCrop: true, scan: true, first: true });
+  setTimeout(() => files.forEach(f => URL.revokeObjectURL(f._url)), 60000);
+}
+
+/* ===== स्कैन शुरू ===== */
+async function doScan() {
+  if (SC.src === 'usb' && !scUsb.tr) { toast('USB प्रिंटर फिर से चुनें', 3000); openScan(); return; }
+  const sub = 'स्कैनर में फोटो / पेपर रखा रहने दें', via = SC.src === 'usb' && scUsb.tr;
+  closeScan();
+  let pct = 8; progress('स्कैन हो रहा है…', sub, pct, '🖨️', null);
+  const iv = setInterval(() => { pct = Math.min(90, pct + 3); progress('स्कैन हो रहा है…', sub, pct, '🖨️', null); }, 700);
+  try {
+    let blob;
+    if (via) {
+      const bytes = await esclScan(scUsb.tr, scUsb.root, scUsb.caps, SC, m => progress(m, sub, pct, '🖨️', null));
+      blob = new Blob([bytes], { type: 'image/jpeg' });
+    } else {
+      const q = '/scan?dpi=' + SC.dpi + '&color=' + SC.color + '&area=' + encodeURIComponent(SC.area) + '&dev=' + encodeURIComponent(SC.dev || '');
+      const r = await scGet(q, 180000);
+      if (!r.ok) { let m = ''; try { m = (await r.json()).error; } catch (_) {} throw new Error(m || ('कोड ' + r.status)); }
+      blob = await r.blob();
+    }
+    if (!blob.size) throw new Error('खाली स्कैन आया');
+    clearInterval(iv); hideProgress();
+    const file = new File([blob], 'scan-' + stampNow() + '.jpg', { type: 'image/jpeg' });
+    let parts = [file];
+    if (SC.auto === '1') { progress('फोटो पहचान रहा हूँ…', sub, 94, '🔍', null); parts = await autoSplitFile(file); }
+    clearInterval(iv); hideProgress();
+    const multi = SC.multi === '1' && scBatch.length + parts.length <= 20;
+    if (multi || scBatch.length) {
+      parts.forEach(f => { f._url = URL.createObjectURL(f); scBatch.push(f); });
+    }
+    if (multi) { // जमा करें, स्कैन स्क्रीन पर लौटें
+      $('scanModal').classList.remove('hidden'); document.body.classList.add('noscroll'); scShow('scReady'); scBatchRender();
+      toast(parts.length > 1 ? parts.length + ' फोटो अलग मिलीं — कुल ' + scBatch.length + ' जमा ✓' : 'स्कैन ' + scBatch.length + ' जमा ✓ — अगला पेपर रखें', 2800);
+    } else if (scBatch.length) scBatchDone();
+    else { if (parts.length > 1) toast(parts.length + ' फोटो अलग मिलीं ✓', 2500); addPhotoFiles(parts, { openCrop: true, scan: true, first: true }); }
+  } catch (e) {
+    clearInterval(iv); hideProgress();
+    if (via) { try { await scUsb.tr.close(); } catch (_) {} scUsb.tr = null; } // अटका ट्रांसफ़र साफ़ — अगली बार नया कनेक्शन
+    toast('स्कैन नहीं हुआ: ' + (e.name === 'AbortError' ? 'समय खत्म हो गया' : e instanceof TypeError && !via ? 'स्कैनर प्रोग्राम से कनेक्ट नहीं हो पाया' : e.message), 5200);
+    openScan();
+  }
+}
+
+/* ===== USB से सीधे प्रिंट: नया (IPP) + पुराना (PostScript / PCL) ===== */
+const PAGE_TABLE = [ // [चौड़ाई mm, ऊँचाई mm, IPP media नाम, PCL पेज कोड]
+  [210, 297, 'iso_a4_210x297mm', 26], [297, 420, 'iso_a3_297x420mm', 27], [148, 210, 'iso_a5_148x210mm', 25],
+  [215.9, 279.4, 'na_letter_8.5x11in', 2], [215.9, 355.6, 'na_legal_8.5x14in', 3], [101.6, 152.4, 'na_index-4x6_4x6in', 0], [127, 177.8, 'na_5x7_5x7in', 0]];
+function pageInfo(wmm, hmm) { return PAGE_TABLE.find(t => Math.abs(t[0] - wmm) < 1.6 && Math.abs(t[1] - hmm) < 1.6) || null; }
+
+/* --- IPP (बाइनरी) --- */
+function ippEncode(op, opAttrs, jobAttrs) {
+  const out = []; const u16 = n => out.push((n >> 8) & 255, n & 255), u32 = n => out.push((n >>> 24) & 255, (n >>> 16) & 255, (n >>> 8) & 255, n & 255);
+  const str = s => { const b = enc.encode(s); u16(b.length); b.forEach(x => out.push(x)); };
+  out.push(2, 0); u16(op); u32(1);
+  const put = (tag, list) => {
+    out.push(tag);
+    list.forEach(([t, name, val]) => (Array.isArray(val) ? val : [val]).forEach((v, i) => {
+      out.push(t); if (i === 0) str(name); else u16(0);
+      if (t === 0x21 || t === 0x23) { u16(4); u32(v); } else if (t === 0x22) { u16(1); out.push(v ? 1 : 0); } else str(String(v));
+    }));
+  };
+  put(0x01, [[0x47, 'attributes-charset', 'utf-8'], [0x48, 'attributes-natural-language', 'en'], [0x45, 'printer-uri', 'ipp://localhost/ipp/print'], [0x42, 'requesting-user-name', 'mrphoto']].concat(opAttrs || []));
+  if (jobAttrs && jobAttrs.length) put(0x02, jobAttrs);
+  out.push(0x03); return new Uint8Array(out);
+}
+function ippParse(u) {
+  const dv = new DataView(u.buffer, u.byteOffset, u.byteLength); const res = { status: dv.getUint16(2), attrs: {} }; let p = 8, last = '';
+  while (p < u.length) {
+    const tag = u[p++]; if (tag === 0x03) break; if (tag <= 0x0f) continue;
+    const nl = dv.getUint16(p); p += 2; const name = nl ? dec.decode(u.subarray(p, p + nl)) : last; p += nl;
+    const vl = dv.getUint16(p); p += 2; const v = u.subarray(p, p + vl); p += vl; last = name;
+    const val = (tag === 0x21 || tag === 0x23) ? new DataView(v.buffer, v.byteOffset, v.byteLength).getInt32(0) : tag === 0x22 ? !!v[0] : (tag >= 0x40 && tag <= 0x4a) ? dec.decode(v) : null;
+    (res.attrs[name] = res.attrs[name] || []).push(val);
+  }
+  return res;
+}
+const IPP_HDR = { 'Content-Type': 'application/ipp' };
+async function ippCall(tr, bytes) {
+  const r = await tr.request('POST', '/ipp/print', IPP_HDR, bytes);
+  if (r.status !== 200) throw new Error('प्रिंटर ने IPP नहीं माना (HTTP ' + r.status + ')');
+  return ippParse(r.body);
+}
+async function ippPrinterInfo(tr) {
+  const r = await ippCall(tr, ippEncode(0x000B, [[0x44, 'requested-attributes', ['document-format-supported', 'printer-device-id', 'printer-make-and-model', 'printer-state']]]));
+  if (r.status >= 0x0400) throw new Error('IPP जानकारी नहीं मिली (0x' + r.status.toString(16) + ')');
+  const a = r.attrs; return { formats: a['document-format-supported'] || [], deviceId: (a['printer-device-id'] || [''])[0], model: (a['printer-make-and-model'] || [''])[0], state: (a['printer-state'] || [3])[0] };
+}
+async function ippPrint(tr, bytes, mime, name, media) {
+  const job = [[0x21, 'copies', 1], [0x23, 'print-quality', 5], [0x44, 'print-scaling', 'none']]; if (media) job.push([0x44, 'media', media]);
+  const head = ippEncode(0x0002, [[0x42, 'job-name', name], [0x49, 'document-format', mime]], job);
+  const body = new Uint8Array(head.length + bytes.length); body.set(head); body.set(bytes, head.length);
+  const r = await ippCall(tr, body);
+  if (r.status >= 0x0400) throw new Error('प्रिंटर ने प्रिंट नहीं लिया (IPP 0x' + r.status.toString(16) + ')');
+}
+
+/* --- IEEE-1284 Device ID (प्रिंटर की भाषाएं: CMD:PCL,POSTSCRIPT…) --- */
+function parseDeviceId(s) {
+  const o = { mfg: '', mdl: '', cmd: [] }; (s || '').split(';').forEach(kv => {
+    const i = kv.indexOf(':'); if (i < 0) return; const k = kv.slice(0, i).trim().toUpperCase(), v = kv.slice(i + 1).trim();
+    if (k === 'MFG' || k === 'MANUFACTURER') o.mfg = v; else if (k === 'MDL' || k === 'MODEL') o.mdl = v; else if (k === 'CMD' || k === 'COMMAND SET') o.cmd = v.split(',').map(x => x.trim().toUpperCase()).filter(Boolean);
+  }); return o;
+}
+async function usbDeviceId(dev, itf, alt) {
+  try {
+    const r = await dev.controlTransferIn({ requestType: 'class', recipient: 'interface', request: 0, value: 0, index: (itf << 8) | alt }, 1024);
+    if (r.status !== 'ok' || !r.data || r.data.byteLength < 3) return '';
+    const u = new Uint8Array(r.data.buffer, r.data.byteOffset, r.data.byteLength); let len = (u[0] << 8) | u[1]; if (len < 2 || len > u.length) len = (u[1] << 8) | u[0]; if (len < 2 || len > u.length) len = u.length;
+    return dec.decode(u.subarray(2, len));
+  } catch (_) { return ''; }
+}
+
+/* --- कच्चा USB (पुराने प्रिंटर: protocol 1 / 2, सीधे bulk-OUT) --- */
+class UsbRaw {
+  constructor(dev) { this.dev = dev; this.ok = false; this.id = ''; }
+  async open() {
+    const d = this.dev; if (!d.opened) await d.open(); if (!d.configuration) await d.selectConfiguration(d.configurations[0].configurationValue);
+    const c = []; for (const itf of d.configuration.interfaces) for (const alt of itf.alternates) if (alt.interfaceClass === 7 && alt.interfaceProtocol !== 4 && alt.endpoints.some(e => e.type === 'bulk' && e.direction === 'out')) c.push({ itf, alt });
+    c.sort((a, b) => b.alt.interfaceProtocol - a.alt.interfaceProtocol); // पहले protocol 2 (द्विदिश)
+    if (!c.length) { const e = new Error('इस प्रिंटर में सीधा (raw) USB रास्ता नहीं है'); e.code = 'noraw'; throw e; }
+    let last = null;
+    for (const x of c) {
+      try {
+        await d.claimInterface(x.itf.interfaceNumber); await d.selectAlternateInterface(x.itf.interfaceNumber, x.alt.alternateSetting);
+        this.outEp = x.alt.endpoints.find(e => e.type === 'bulk' && e.direction === 'out'); this.itf = x.itf.interfaceNumber; this.ok = true;
+        this.id = await usbDeviceId(d, x.itf.interfaceNumber, x.alt.alternateSetting); return;
+      } catch (e) { last = e; }
+    }
+    const e = new Error('USB इंटरफ़ेस नहीं खुला (' + (last && last.message || '') + ')'); e.code = 'claim'; throw e;
+  }
+  async write(u8, onProg) {
+    for (let o = 0; o < u8.length; o += 16384) {
+      const r = await this.dev.transferOut(this.outEp.endpointNumber, u8.subarray(o, Math.min(u8.length, o + 16384)));
+      if (r.status !== 'ok') throw new Error('प्रिंटर को भेजने में रुकावट (' + r.status + ')'); if (onProg) onProg(Math.min(1, (o + 16384) / u8.length));
+    }
+  }
+  async close() { try { this.ok = false; if (this.dev.opened) await this.dev.close(); } catch (_) {} }
+}
+
+/* --- PostScript (JPEG को सीधे DCT फ़िल्टर से) --- */
+function a85(u8) {
+  let s = '', col = 0; const push = t => { s += t; col += t.length; if (col >= 76) { s += '\n'; col = 0; } };
+  for (let i = 0; i < u8.length; i += 4) {
+    const n = Math.min(4, u8.length - i); let v = 0; for (let j = 0; j < 4; j++) v = v * 256 + (j < n ? u8[i + j] : 0);
+    if (n === 4 && v === 0) { push('z'); continue; }
+    const c = []; for (let j = 4; j >= 0; j--) { c[j] = String.fromCharCode(33 + v % 85); v = Math.floor(v / 85); } push(c.slice(0, n + 1).join(''));
+  }
+  return s + '~>\n';
+}
+function psBuild(pages) { // pages: [{jpeg:Uint8Array,w,h,wmm,hmm}]
+  const parts = [enc.encode('%!PS-Adobe-3.0\n%%Creator: MR Photo\n%%Pages: ' + pages.length + '\n%%EndComments\n')];
+  pages.forEach((p, i) => {
+    const wp = (p.wmm * 72 / 25.4).toFixed(2), hp = (p.hmm * 72 / 25.4).toFixed(2);
+    parts.push(enc.encode('%%Page: ' + (i + 1) + ' ' + (i + 1) + '\n<< /PageSize [' + wp + ' ' + hp + '] >> setpagedevice\ngsave ' + wp + ' ' + hp + ' scale\n/DeviceRGB setcolorspace\n' +
+      '<< /ImageType 1 /Width ' + p.w + ' /Height ' + p.h + ' /BitsPerComponent 8 /Decode [0 1 0 1 0 1] /ImageMatrix [' + p.w + ' 0 0 -' + p.h + ' 0 ' + p.h + ']\n/DataSource currentfile /ASCII85Decode filter /DCTDecode filter >> image\n' + a85(p.jpeg) + 'grestore showpage\n'));
+  });
+  parts.push(enc.encode('%%EOF\n')); return concatU8(parts);
+}
+function concatU8(parts) { let n = 0; parts.forEach(p => n += p.length); const o = new Uint8Array(n); let k = 0; parts.forEach(p => { o.set(p, k); k += p.length; }); return o; }
+
+/* --- PCL (काला-सफ़ेद रेखाचित्र, Floyd–Steinberg डिथर) --- */
+function ditherMono(rgba, w, x0, y0, cw, ch) {
+  const rowB = (cw + 7) >> 3, out = new Uint8Array(rowB * ch); let cur = new Float32Array(cw + 2), nxt = new Float32Array(cw + 2);
+  for (let y = 0; y < ch; y++) {
+    nxt.fill(0);
+    for (let x = 0; x < cw; x++) {
+      const i = ((y0 + y) * w + x0 + x) * 4, v = 0.299 * rgba[i] + 0.587 * rgba[i + 1] + 0.114 * rgba[i + 2] + cur[x + 1], q = v < 128 ? 0 : 255, e = v - q;
+      if (!q) out[y * rowB + (x >> 3)] |= 0x80 >> (x & 7);
+      cur[x + 2] += e * 7 / 16; nxt[x] += e * 3 / 16; nxt[x + 1] += e * 5 / 16; nxt[x + 2] += e / 16;
+    }
+    const t = cur; cur = nxt; nxt = t;
+  }
+  return { data: out, rowB };
+}
+function pclBuild(rgba, w, h, code, dpi) { // शीट RGBA -> PCL बाइट। किनारे का ~4 mm प्रिंटर का अनप्रिंटेबल हिस्सा काटते हैं
+  const cut = Math.round(dpi * 0.17), cw = w - 2 * cut, ch = h - 2 * cut, d = ditherMono(rgba, w, cut, cut, cw, ch), E = '\x1b';
+  const parts = [enc.encode(E + 'E' + E + '&l' + code + 'A' + E + '&l0E' + E + '&l0L' + E + '*t' + dpi + 'R' + E + '*p0X' + E + '*p0Y' + E + '*r' + cw + 'S' + E + '*r1A' + E + '*b0M')];
+  const hd = enc.encode(E + '*b' + d.rowB + 'W'); const body = new Uint8Array((hd.length + d.rowB) * ch);
+  for (let y = 0; y < ch; y++) { const o = y * (hd.length + d.rowB); body.set(hd, o); body.set(d.data.subarray(y * d.rowB, (y + 1) * d.rowB), o + hd.length); }
+  parts.push(body, enc.encode(E + '*rC\f' + E + 'E')); return concatU8(parts);
+}
+function pickPrintMethod(info, override, wmm, hmm) { // -> {m:'ipp-jpeg'|'ipp-pdf'|'ps'|'pcl', ...} या throw
+  const f = (info.formats || []).map(x => String(x).toLowerCase()), cmd = info.cmd || [], pg = pageInfo(wmm, hmm);
+  const hasPS = cmd.some(c => /^(POSTSCRIPT|PS)\d?$/.test(c)), hasPCL = cmd.some(c => /^PCL(3|5|5E|5C)?$/.test(c));
+  if (override === 'pcl' || override === 'ps') return { m: override };
+  if (f.includes('image/jpeg')) return { m: 'ipp-jpeg' };
+  if (f.includes('application/pdf')) return { m: 'ipp-pdf' };
+  if (hasPS) return { m: 'ps' };
+  if (hasPCL) return { m: 'pcl' };
+  const e = new Error('इस प्रिंटर की भाषा (' + (cmd.concat(f.map(x => x.replace(/^.*\//, ''))).join(', ') || 'पता नहीं चली') + ') सीधे नहीं चलती — ये शायद सिर्फ अपने Windows / Mac ड्राइवर से छपता है। "PDF खोलकर प्रिंट" या कंप्यूटर से प्रिंट करें।'); e.code = 'nolang'; throw e;
+}
+
+/* --- पूरा सिलसिला: प्रिंटर चुनो -> भाषा पहचानो -> सही तरीके से भेजो --- */
+async function usbPrintProbe(dev) { // IPP से (नए प्रिंटर) जानकारी
+  const info = { formats: [], cmd: [], model: '', tr: null, state: 3 };
+  try {
+    const tr = new UsbHttp(dev); await tr.open(); info.tr = tr;
+    const r = await ippPrinterInfo(tr), di = parseDeviceId(r.deviceId);
+    info.formats = r.formats; info.cmd = di.cmd; info.model = r.model || ((di.mfg + ' ' + di.mdl).trim()); info.state = r.state;
+  } catch (e) { info.ippErr = e; if (info.tr) { await info.tr.close(); info.tr = null; } else { try { if (dev.opened) await dev.close(); } catch (_) {} } }
+  return info;
+}
+async function usbPrintRun(dev, getPages, override, wmm, hmm, status) {
+  let info = await usbPrintProbe(dev), pick = null, raw = null;
+  try { pick = pickPrintMethod(info, override, wmm, hmm); }
+  catch (e1) { // IPP से भाषा नहीं मिली — पुराने रास्ते (raw USB) से Device ID पढ़ें
+    if (info.tr) { await info.tr.close(); info.tr = null; }
+    try { raw = new UsbRaw(dev); await raw.open(); info.cmd = parseDeviceId(raw.id).cmd.concat(info.cmd); info.model = info.model || parseDeviceId(raw.id).mdl; pick = pickPrintMethod(info, override, wmm, hmm); }
+    catch (e2) { if (raw) await raw.close(); throw (e2.code === 'nolang' || e2.code === 'noraw' && info.ippErr == null) ? e2 : (e2.code === 'noraw' || e2.code === 'claim') ? new Error('प्रिंटर से बात नहीं हो पाई: ' + ((info.ippErr || e2).message)) : e2; }
+  }
+  const m = pick.m; if (status) status('प्रिंटर: ' + (info.model || 'USB प्रिंटर') + ' → ' + ({ 'ipp-jpeg': 'IPP (JPEG)', 'ipp-pdf': 'IPP (PDF)', ps: 'PostScript', pcl: 'PCL (काला-सफ़ेद)' })[m], m);
+  const pg = pageInfo(wmm, hmm), media = pg ? pg[2] : '';
+  try {
+    if (m.startsWith('ipp')) {
+      if (info.state === 5) throw new Error('प्रिंटर रुका हुआ है — पेपर / कवर / इंक देखें');
+      if (!info.tr) { if (raw) { await raw.close(); raw = null; } info.tr = new UsbHttp(dev); await info.tr.open(); }
+      const data = await getPages(m);
+      if (m === 'ipp-pdf') await ippPrint(info.tr, data.pdf, 'application/pdf', 'MRPhoto', media);
+      else for (let i = 0; i < data.length; i++) { if (status) status('पेज ' + (i + 1) + ' / ' + data.length + ' भेज रहा हूँ…', m); await ippPrint(info.tr, data[i].bytes, 'image/jpeg', 'MRPhoto ' + (i + 1), media); }
+    } else {
+      if (info.tr) { await info.tr.close(); info.tr = null; }
+      if (!raw || !raw.ok) { raw = new UsbRaw(dev); await raw.open(); }
+      const data = await getPages(m);
+      let bytes;
+      if (m === 'ps') bytes = psBuild(data.map(p => ({ jpeg: p.bytes, w: p.w, h: p.h, wmm: p.wmm, hmm: p.hmm })));
+      else { if (!pg || !pg[3]) throw new Error('पुराने प्रिंटर में सीधे प्रिंट के लिए A4 / A3 / A5 / Letter / Legal शीट चुनें'); bytes = concatU8(data.map(p => pclBuild(p.rgba, p.w, p.h, pg[3], p.dpi))); }
+      await raw.write(bytes, f => status && status('प्रिंटर को भेज रहा हूँ… ' + Math.round(f * 100) + '%', m));
+    }
+  } finally { if (info.tr) await info.tr.close(); if (raw) await raw.close(); }
+  return { method: m, model: info.model };
+}
+async function usbPrintDevice() {
+  await scUsbRefresh();
+  if (scUsb.dev && scUsb.list.includes(scUsb.dev)) return scUsb.dev;
+  if (scUsb.list.length === 1) return scUsb.list[0];
+  return await navigator.usb.requestDevice({ filters: [{ classCode: 7 }] });
+}
+async function doUsbPrint() {
+  if (needPhotos()) return;
+  if (!USB_OK) { toast(window.isSecureContext ? 'इस ब्राउज़र में USB नहीं चलता — Android / कंप्यूटर के Chrome में खोलें' : 'USB के लिए ऐप https:// पर खुली होनी चाहिए', 4200); return; }
+  let dev; try { dev = await usbPrintDevice(); } catch (e) { if (e.name !== 'NotFoundError') toast('USB प्रिंटर नहीं मिला: ' + e.message, 4000); return; }
+  closeOutput();
+  if (scUsb.tr) { await scUsb.tr.close(); scUsb.tr = null; } // स्कैन वाला कनेक्शन छोड़ें; अगला स्कैन नया कनेक्शन लेगा
+  const L = plan().L, wmm = L.pw0, hmm = L.ph0, ovr = ($('uspLang') || {}).value || 'auto';
+  const dpiJ = S.printDpi >= 600 ? 600 : 300, title = 'USB प्रिंट के लिए शीट बन रही है…';
+  const toBytes = async b => new Uint8Array(await b.arrayBuffer());
+  try {
+    progress('प्रिंटर पहचान रहा हूँ…', usbName(dev), 3, '🖨️', null);
+    const r = await usbPrintRun(dev, async m => {
+      if (m === 'pcl') {
+        const pages = await buildPages({ fmt: 'png', dpi: 300, title, icon: '🖨️' }), out = [];
+        for (const p of pages) { const bmp = await createImageBitmap(p.blob), cv = document.createElement('canvas'); cv.width = bmp.width; cv.height = bmp.height; const x = cv.getContext('2d', { willReadFrequently: true }); x.fillStyle = '#fff'; x.fillRect(0, 0, cv.width, cv.height); x.drawImage(bmp, 0, 0); out.push({ rgba: x.getImageData(0, 0, cv.width, cv.height).data, w: cv.width, h: cv.height, dpi: 300 }); if (bmp.close) bmp.close(); }
+        return out;
+      }
+      const pages = await buildPages({ fmt: 'jpeg', dpi: m === 'ps' ? 300 : dpiJ, title, icon: '🖨️' });
+      if (m === 'ipp-pdf') return { pdf: await toBytes(await makePDF(pages)) };
+      const out = []; for (const p of pages) out.push({ bytes: await toBytes(p.blob), w: p.w, h: p.h, wmm: p.wmm, hmm: p.hmm }); return out;
+    }, ovr, wmm, hmm, (msg, m) => progress('USB प्रिंट', msg, 96, '🖨️', null));
+    progress('प्रिंट भेज दिया ✓', (r.model || 'प्रिंटर') + ' — अब प्रिंटर चलता दिखेगा', 100, '✅'); setTimeout(hideProgress, 2600);
+  } catch (e) { hideProgress(); toast('USB प्रिंट नहीं हुआ: ' + e.message, 7000); }
+}
+document.addEventListener('change', e => { if (e.target && e.target.id === 'uspLang') { SC.rawLang = e.target.value; scSave(); } });
+
+/* ---------- फोन: प्रिंटर की ऐप (HP Smart / Canon / Epson) से स्कैन → Share → MR Photo ---------- */
+async function loadShared() {
+  const n = +new URLSearchParams(location.search).get('shared'); if (!n || !window.caches) return;
+  try {
+    const c = await caches.open('mrphoto-share'), files = [];
+    for (let i = 0; i < n; i++) {
+      const r = await c.match('./shared/' + i); if (!r) continue;
+      const b = await r.blob(); files.push(new File([b], decodeURIComponent(r.headers.get('X-Name') || ('shared' + i + '.jpg')), { type: b.type || 'image/jpeg' }));
+    }
+    for (const k of await c.keys()) await c.delete(k);
+    history.replaceState(null, '', location.pathname);
+    if (files.length) addPhotoFiles(files, { openCrop: true, scan: true });
+  } catch (e) { /* चुपचाप छोड़ दें */ }
+}
+
 /* ---------- PWA: ब्राउज़र खुद Install / Add to Home screen दिखाता है ---------- */
 if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
@@ -1632,7 +2737,8 @@ window.addEventListener('orientationchange', () => setTimeout(refresh, 300));
 document.addEventListener('keydown', e => {
   if ((e.key === 'Enter' || e.key === ' ') && e.target.classList && (e.target.classList.contains('toggle-switch') || e.target.classList.contains('swatch'))) { e.preventDefault(); e.target.click(); }
 });
-buildSizes(); renderPresets(); renderCustoms(); renderStrip(); syncUI(); openTab('photos'); drawAll();
+$('mgSize').innerHTML = marginGridHTML(); $('mgTpl').innerHTML = marginGridHTML();
+buildSizes(); renderPresets(); renderCustoms(); renderStrip(); syncUI(); openTab('photos'); drawAll(); loadShared();
 if ((store.get('mrphoto_pro_ui', {}) || {}).hidden) togglePanel(true);
 if (window.ResizeObserver) new ResizeObserver(() => refresh()).observe($('stage'));
 </script>
